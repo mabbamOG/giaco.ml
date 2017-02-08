@@ -26,7 +26,7 @@ let add = function
 | _ -> failwith "plus operation not supported with these types"
 
 (* interpreter for the language, environment is static and global *)
-(** type is (variable->value) expr -> value *)
+(** type is (variable->value) -> expr -> value *)
 let rec eval env = function
 | Val a -> a
 | Var id -> env id
