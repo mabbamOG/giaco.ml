@@ -1,12 +1,26 @@
-(* having "Int 4" -> "Int 4" requires use of polymorphic variants *)
-(* otherwise: "Int 4" -> "EInt 4" which is really fucking ugly because of redundancy of types in expr and value *)
-(* or: "int 4" -> "Int 4" where 'int' is a function that allows the user to express Val(Int(4)) and at the same time *)
-(*     avoids redundancy in the expr type and eval interpreter *)
-type value = [`Int of int | `Bool of bool]
-type expr = [value | `Var of string | `Add of expr * expr]
+(* externally written *)
+(* having "Int 4" -> "4" requires use of Generic Algebraic Datatypes *)
+type 'a expr =
+  | Int : int -> int expr
+  | Bool : bool -> bool expr
+  | Add : int expr * int expr -> int expr
+  | If : bool expr * 'a expr * 'a expr -> 'a expr
+  | Equal : int expr * int expr -> bool expr
 
-let add = function `Int a,`Int b -> `Int (a+b) | _->failwith "types not accepted"
-let rec eval e = match e with (* can this be function Int_ |Bool _ ... as e -> e ? *)
-| `Int _ | `Bool _ -> e
-| `Add (e1,e2) -> add (eval e1, eval e2)
-| _ -> failwith "ho"
+let rec eval
+  : type a. a expr -> a
+  = function
+    | Int i -> i
+    | Bool b -> b
+    | Add (a, b) -> eval a + eval b
+    | If (a,b,c) -> if eval a then eval b else eval c
+    | Equal (a,b) -> eval a = eval b
+
+
+let () =
+  assert (eval
+      (If (Equal (Int 2, Add (Int 1, Int 1)),
+         Bool true, Bool false)));
+  assert (eval
+      (Add (Int 1, Add (Int 1, Int 40))) = 42);
+  ()
