@@ -1,4 +1,4 @@
-(* having "Int 4" -> "Int 4" requires use of polymorphic variants *)
+(* having "Int 4" -> "Int 4" requires use of Generic Algebrai Datatypes *)
 (* otherwise: "Int 4" -> "EInt 4" which is really fucking ugly because of redundancy of types in expr and value *)
 (* or: "int 4" -> "Int 4" where 'int' is a function that allows the user to express Val(Int(4)) and at the same time *)
 (*     avoids redundancy in the expr type and eval interpreter *)

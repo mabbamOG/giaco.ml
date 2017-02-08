@@ -1,5 +1,5 @@
 (* externally written *)
-(* having "Int 4" -> "4" requires use of Generic Algebraic Datatypes *)
+(* having "Int 4" -> "4" requires use of polymorphic variants *)
 type 'a expr =
   | Int : int -> int expr
   | Bool : bool -> bool expr
