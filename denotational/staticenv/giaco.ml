@@ -31,3 +31,17 @@ let rec eval env = function
 | Val a -> a
 | Var id -> env id
 | Plus (e1,e2)-> add (eval env e1,eval env e2)
+
+(***********************************************)
+(*****************TESTING***********************)
+(***********************************************)
+
+let test_env = function
+| "a" -> Int 3
+| "b" -> Int 4
+| "ciao" -> Int 42
+| _ -> failwith "variable not bound"
+
+let _ = eval test_env (int 5)
+let _ = eval test_env (bool true)
+let _ = eval test_env (Plus(int 5, int 5))
