@@ -2,6 +2,7 @@
 (*****************SYNTAX************************)
 (***********************************************)
 
+
 (* internal language type system *)
 type value = Int of int | Bool of bool
 type variable = string
@@ -20,13 +21,13 @@ let bool b = Val(Bool(b))
 (***********************************************)
 
 (* internal implementation for the language, expects evaluated expressions *)
-let plus e1 e2 = match e1,e2 with
-| Int x, Int y -> Int (x+y)
+let add = function
+| Int a, Int b -> Int (a+b)
 | _ -> failwith "plus operation not supported with these types"
 
 (* interpreter for the language, environment is static and global *)
 (** type is (variable->value) expr -> value *)
 let rec eval env = function
-| Val v -> v
+| Val a -> a
 | Var id -> env id
-| Plus (e1,e2)-> plus (eval env e1) (eval env e2)
+| Plus (e1,e2)-> add (eval env e1,eval env e2)
