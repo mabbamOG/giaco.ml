@@ -1,0 +1,138 @@
+* La teoria
+#+OPTIONS: toc:2 
+** Domini Sintattici
+tutto cio' che lutente puo' esprimere
+*** Definizioni
+- ide :: stringhe, servono per descrivere variabili all'interno dell'ambiente
+- expr :: espressioni, servono per valutare espressioni
+- com :: comandi, servono per programmare con dati mutabili
+- dec :: dichiarazioni, servono per programmare con dati mutabili (store)
+*** Esempio
+- ide :: string
+- expr :: ide | Val of (ide) | Lambda of (ide * expr) | Apply of (expr * expr)
+- com :: IfThenElse of (expr * com * com) | While of (expr * com) | Assign  of (ide * expr) | Cseq of (com * com)
+- dec :: Var of (ide * expr) | Dseq of (dec * dec)
+- prog :: Prog of (dec * com)
+** Domini Semantici
+tutto cio' che linterprete puo' esprimere. suddiviso fra stato e valori
+interni all'interprete
+*** Definizioni
+**** Stato
+- env :: l'ambiente, e' la parte del programma che associa variabili a d-value (valori denotabili)
+- store :: lo store, e' la memoria di dati moodificabili. associa locazioni a m-value (valori memorizzabili)
+- fun :: boh?
+**** Valori
+- dval :: valori denotabili, che possono essere assegnati ad una variabile
+  d'ambiente
+- mval :: valori memorizzabili, che possono essere contenuti in una locazione
+  dello store (cella di memoria modificabile).
+- eval :: valori esprimibili, che sono il risultato dell'interpretazione
+  semantica di una espressione
+*** Implementazione
+**** Stato
+- env :: ide -> dval
+- store :: loc -> mval
+      - newloc :: () -> loc
+- fun :: store * dval -> eval
+**** Valori
+i domini sono in generale separati, ma nel contesto di alcuni paradigmi
+semantici possono esserci sovrapposizioni
+le sublist contengono valori non necessari
+- eval :: int | bool | fun
+      + loc (non usato da noi)
+- dval :: loc
+      + int | bool | fun (usato da noi)
+- mval :: int | bool
+      + loc | fun (non usato da noi)
+** Valutazione Semantica
+lega assieme i domini sintattici e semantici
+*** Definizioni
+- evaluate :: interpreta le espressioni, restituendo un eval
+- cvaluate :: interpreta i comandi, restituendo una memoria store
+- dvaluate :: interpreta le dichiarazioni, restituendo uno store ma anche un
+  ambiente, poiche' la creazione di una variabile nello store e' legata
+  alla creazione della sua locazione nell'ambiente
+- interprete :: interpreta qualunque roba, necessario per legare assieme
+  tutte le funzioni di valutazione semantica, in un paradigma che ne possa
+  richiedere piu' di una (e.g. imperativo o OOP)
+*** Implementazione
+- evaluate :: EXPR * env * store -> eval
+- cvaluate :: COM * env * store -> store
+- dvaluate :: DEC * env * store -> env * store 
+- interprete :: PROG * env * store -> store
+*** Esempio
+la semantica viene implementata attraverso pattern matching sui domini
+sintattici.
+e' descritta qui a grandi linee
+- evaluate :: 
+      | id -> d-to-eval(env(id))
+      | Val id -> m-to-eval(store(env(id)))
+      | Plus e1,e2 -> (evaluate e1) + (evaluate e2)
+      | Lambda id,e -> (lambda d. evaluate e1 in env' where id=d)
+      | Apply e1,e2 -> (evaluate e1) apply to e-to-dval(evaluate e2)
+- cvaluate ::
+      | IfThenElse e,c1,c2 -> if (evaluate e1)==true then (cvaluate c1) else
+      (cvaluate c2)
+      | Cseq c1,c2 -> cvaluate c2 in store'=(cvaluate c1)
+      | Assign id,e -> store' where env(id)=(e-to-mval(evaluate e))
+      | While e,c -> calcola min fix-point x. if (evaluate e)==true then
+      (cvaluate c1 x volte sullo store, restituendo l'ultimo store) else
+      store
+- dvaluate ::
+      | Dseq d1,d2 -> dvaluate d2 in (env',store')=(dvaluate d1)
+      | Var id,e -> calcola l=newloc() e restituisci env' where id=l e store' where l=(evaluate e)
+- interprete :: Prog d,c -> cvaluate c in (dvaluate d)
+** TODO Tiplologia Semantica
+regola la valutazione semantica secondo una determinata filosofia di pensiero
+*** Definizioni
+**** Denotazionale
+- composizionalita' :: la semantica di un costrutto e' definita per
+  composizione della semantica dei suoi componenti
+- programma stesso denotabile :: il programma e' a tutti gli effetti una
+  funzione sui domini semantici. Lo stato e l'ambiente non servono affinche'
+  il programma possa esistere, senza di essi sara' sempllicemente una
+  funzione con applicazione parziale (ovviamente non sara' possibile valutare
+  il programma prima di aver completato l'applicazione di tutti gli
+  argomenti)
+- richiede calcolo punto fisso :: e' necessario per poter svolgere la 
+  ricorsione potenzialmente infinita della semantica denotazionale su una
+  MdT (macchina di turing). OCAML lo svolge automaticamente permettendoci
+  di creare funzioni ricorsive.
+- continuazioni :: concetto (dominio semantico) piu' evoluto della semantica denotazionale. sono
+  necessarie per poter svolgere in maniera composizionale (e quindi
+  denotazionale) alcune funzioni di gestione del codice piu' operazionali, ad
+  esempio i jump nel codice. richiedono un dominio: store -> store
+**** Operazionale
+- sistemi di transizione :: insieme di regole che definiscono lo stato ad
+  ogni esecuzione dei vari costrutti, attraverso un insieme di relazioni di
+  transizione. e' un modo di lavorare piu' vicino alle macchine di turing.
+  - configurazioni :: <Comando,Env,Store>
+  - relazione di transizione :: configurazione -(com)> store
+  - regola di transizione :: relazione' su determinati parametrii &&
+    relazione'' su parametri connessi = relazione'''
+- definizione di transizione :: e' possibile attraverso delle relazioni, se
+  sono disponibili nel linguaggio usato. in alternativa si possono pur sempre
+  usare delle funzioni, in maniera piu' simile alla sintassi per la semantica
+  denotazionale. spesso la differenza consiste nel fatto che la semantica
+  denotazionale era parzialmente applicabile e adesso non lo e' piu'.
+**** Assiomatica
+.....
+** TODO Paradigmi Semantici
+influenzano i domini
+*** Definizioni
+**** Funzionale
+- DOMINI SINTATTICI :: expr
+- DOMINI SEMANTICI :: env + eval (con eval=mval)
+- VALUTAZIONE SEMANTICA :: expr -> env -> eval
+**** Imperativo
+- DOMINI SINTATTICI :: tutti
+- DOMINI SEMANTICI :: tutti con distinzione tra le diverse classi di valori.
+  inoltre, le funzioni sono solamente denotabili. le locazioni lo sono
+  sempre.
+- VALUTAZIONE SEMANTICA :: tutti
+**** Ad Oggetti
+- DOMINI SINTATTICI :: tutti + dichiarazioni di classe
+- DOMINI SEMANTICI :: env,store,heap (x gestire pointer ed oggetti) +
+  dval,mval,eval e gli oggetti
+- VALUTAZIONE SEMANTICA :: tutti MA restituisce anche l'heap come risultato
+  finale oltre allo store

@@ -5,12 +5,10 @@
 
 (* internal language type system *)
 type value = Int of int | Bool of bool
-(* type variable = string *) (* NOT TO BE USED UNLESS I  HAVE A CONSTRUCTOR *)
 
 (* external language parser through ocaml type constructors *)
 type expr =
 | Val of value
-(*| Var of variable*)
 | Var of string
 | Add of expr*expr
 (** external aliases to allow for the user input of types, basically a hack *)
