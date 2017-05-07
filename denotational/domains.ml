@@ -1,5 +1,5 @@
 (* DOMAINS - SEMANTIC - VALUES *)
-type evalue = Int of int | Bool of bool | Float of float | Fun of (ide->evalue)
+type evalue = Int of int | Bool of bool | Float of float | Fun of (expr->evalue) (* o evalue -> evalue? *)
 
 (* DOMAINS - SYNTAX *)
 type ide = string
