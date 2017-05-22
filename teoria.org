@@ -9,7 +9,7 @@ tutto cio' che lutente puo' esprimere
 - dec :: dichiarazioni, servono per programmare con dati mutabili (store)
 *** Esempio
 - ide :: string
-- expr :: ide | Val of (ide) | Lambda of (ide * expr) | Apply of (expr * expr)
+- expr :: Ide | Val of (ide) | Lambda of (ide * expr) | Apply of (expr * expr)
 - com :: IfThenElse of (expr * com * com) | While of (expr * com) | Assign  of (ide * expr) | Cseq of (com * com)
 - dec :: Var of (ide * expr) | Dseq of (dec * dec)
 - prog :: Prog of (dec * com)
@@ -136,3 +136,41 @@ influenzano i domini
   dval,mval,eval e gli oggetti
 - VALUTAZIONE SEMANTICA :: tutti MA restituisce anche l'heap come risultato
   finale oltre allo store
+** TODO EVAL (expr -> env -> evalue)
+associazione fra dominio sintattico e semantico fra 2 ipotetici
+pseudo-lambda-calcolo
+- NOTA! :: le chiamate ad eval sottointendono che l'ambiente in cui verranno
+  e' quello a destra!
+# TABLE @ http://www.tablesgenerator.com
+#+BEGIN_SRC table
++-----+----------------------------------------------------------------------+
+|     |                          ASSOCIAZIONE DOMINI                         |
++-----+----------------------------------------------------------------------+
+|     |   SINTATTICO   |                       SEMANTICO                     |
++-----+----------------+-----------------------------------------------------+
+|     |   EXPRESSIONS  |         EXPR. VALUES        |      ENVIRONMENT      |
+|     |     (expr)     |           (evalue)          |          (p)          |
++-----+----------------+-----------------------------+-----------------------+
+|     |       "a"      |             "a"             |           p           |
++-----+----------------+-----------------------------+-----------------------+
+|     |        1       |              1              |           p           |
++-----+----------------+-----------------------------+-----------------------+
+| |-- |     1 + 1      |           (+ 1 2)           |           p           |
++-----+----------------+-----------------------------+-----------------------+
+| --> |     e1 + e2    | (+ (evalue e1) (evalue e2)) |           p           |
++-----+----------------+-----------------------------+-----------------------+
+|     |        x       |            (p x)            |           p           |
++-----+----------------+-----------------------------+-----------------------+
+|     | [x = e1] in e2 |          (eval e2)          | (x -> (eval e1)) :: p |
++-----+----------------+-----------------------------+-----------------------+
+| |-- |     (f e1)     |      ((p f) (eval e1))      |           p           |
++-----+----------------+-----------------------------+-----------------------+
+| --> |     (e1 e2)    |    ((eval e1) (eval e2))    |           p           |
++-----+----------------+-----------------------------+-----------------------+
+| |-- |  ((\x. e1) e2) |          (eval e1)          | (x -> (eval e2)) :: p |
++-----+----------------+-----------------------------+-----------------------+
+| --> |    (\x. e1)    |       (v -> (eval e1))      |     (x -> v) :: p     |
++-----+----------------+-----------------------------+-----------------------+
+|     |                |                             |                       |
++-----+----------------+-----------------------------+-----------------------+
+#+END_SRC
