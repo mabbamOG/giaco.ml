@@ -1,11 +1,12 @@
 #use "domains.ml";;
+let env' (key:ide) (value:value) (oldenv:env): env = 
+    function id -> if id=key then value else (oldenv id)
+
 (* ISSUES:
     * match tuples instead of function e1 e2
     * look at equals with all that duplication!
+    * some ops must be non-strict -> and/if/or
     *)
-let env' (key:ide) (value:value) (oldenv:env): env = 
-    function id -> if id=key then value else (oldenv key)
-
 let rec eval (e:expr) (p:env) :value = 
     let 
     plus v1 v2 = match v1,v2 with
@@ -47,6 +48,13 @@ let rec eval (e:expr) (p:env) :value =
     _and v1 v2 = match v1,v2 with
         | EBool(a),EBool(b) -> EBool(a&&b)
         | _ -> failwith "and error"
+    and
+    (* only function not value->value->value *)
+    lazy_ifthenelse (c:value) (e1:expr) (e2:expr) =
+        match c with
+        | EBool(true) -> e1
+        | EBool(false) -> e2
+        | _ -> failwith "ifthenelse error"
     in
     match e with
     (* EXPR TYPES *)
@@ -56,8 +64,12 @@ let rec eval (e:expr) (p:env) :value =
     | Float(f) -> EFloat(f)
     | Lambda(x,e) -> ELambda(function v -> eval e (env' x v p))
 
+    (* EXPR CONTROL FLOW *)
+    | IfThenElse(c,e1,e2) -> eval (lazy_ifthenelse (eval c p) e1 e2) p
+
     (* EXPR DEREFERENCE *)
     | Var(x) -> (p x)
+    | LetIn(x,e1,e2) -> eval e2 (env' x (eval e1 p) p)
 
     (* EXPR FUNCTIONS *)
     | Plus(e1,e2) -> plus (eval e1 p) (eval e2 p)
@@ -68,6 +80,5 @@ let rec eval (e:expr) (p:env) :value =
     | Not(e1) -> _not (eval e1 p)
     | Or(e1,e2) -> _or (eval e1 p) (eval e2 p)
     | And(e1,e2) -> _and (eval e1 p) (eval e2 p)
-    | _ -> failwith "impossible!"
 
-let newenv:env = function "" -> Unbound | _ -> failwith "not in environment!" (*utility*)
+let emptyenv:env = function "" -> Unbound | other -> failwith ("'"^other^"' not in environment") (*utility*)
