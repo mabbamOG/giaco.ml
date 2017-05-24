@@ -39,6 +39,7 @@ let
 
 type env = ide -> dvalue
 type store = loc -> mvalue
+let extend_fun_map key value oldmap = function id -> if key=id then value else (oldmap id)
 
 (** SYNTACTIC **)
 type expr =
