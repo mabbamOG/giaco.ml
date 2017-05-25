@@ -9,7 +9,7 @@ let newloc' = newloc store_size
     * look at equals with all that duplication!
     * some ops must be non-strict -> and/if/or
     *)
-let rec eval (e:expr) (p:env) (o:store) :value = 
+let rec eval (e:expr) (p:env) (o:store) :evalue = 
     let 
     plus v1 v2 = match v1,v2 with
         | EInt(x),EInt(y) -> EInt(x+y) 
@@ -52,7 +52,7 @@ let rec eval (e:expr) (p:env) (o:store) :value =
         | _ -> failwith "and error"
     and
     (* only function not value->value->value *)
-    lazy_ifthenelse (b:value) (e1:expr) (e2:expr) =
+    lazy_ifthenelse (b:evalue) (e1:expr) (e2:expr) =
         match b with
         | EBool(true) -> e1
         | EBool(false) -> e2
