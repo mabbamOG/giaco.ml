@@ -6,6 +6,9 @@ let rec cval (c:com) (p:env) (o:store) :store=
         | EBool(true) -> c1
         | EBool(false) -> c2
         | _ -> failwith "imperative if then else error"
+    and reflect (s:string) = match s with
+        | "hi" -> Skip
+        | _ -> failwith "reflection error"
     in
     match c with
     (* COM SIDE EFFECT *)
@@ -17,3 +20,5 @@ let rec cval (c:com) (p:env) (o:store) :store=
     | While(b,c) -> cval (lazy_cifthenelse (eval b p o) (CSeq(c,While(b,c))) Skip) p o
     | CSeq(c1,c2) -> cval c2 p (cval c1 p o)
     | Skip -> o
+    | Reflect(s) -> cval (reflect s) p o
+

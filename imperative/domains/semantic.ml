@@ -27,11 +27,11 @@ and store = loc -> mvalue
 
 (* utility *)
 let extend_fun_map key value oldmap = function id -> if key=id then value else (oldmap id)
-and env': ide->dvalue->env->env = extend_fun_map
+let env': ide->dvalue->env->env = extend_fun_map
 and store': loc->mvalue->store->store = extend_fun_map
 
 let store_size = 100
-and newloc' = newloc store_size
+let newloc' = newloc store_size
 
 let m_to_d = function
     | MInt(x) -> DInt(x)

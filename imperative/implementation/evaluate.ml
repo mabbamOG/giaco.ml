@@ -56,6 +56,14 @@ let rec eval (e:expr) (p:env) (o:store) :evalue =
     _val (x:dvalue) (o':store) = match x with
         | DLoc(l) -> m_to_e (o' l)
         | _ -> failwith "_val error"
+    and
+    len v = match v with
+        | EStr(s) -> EInt(String.length s)
+        | _ -> failwith "len error"
+    and
+    sub v1 v2 v3 = match v1,v2,v3 with
+        | EStr(s),EInt(i),EInt(j) -> if i<=j then EStr(String.sub s i (j-i+1)) else EStr("")
+        | _ -> failwith "sub error"
     in
     match e with
     (* EXPR TYPES *)
@@ -82,3 +90,5 @@ let rec eval (e:expr) (p:env) (o:store) :evalue =
     | Not(e1) -> _not (eval e1 p o)
     | Or(e1,e2) -> eval (lazy_or (eval e1 p o) e2) p o
     | And(e1,e2) -> eval (lazy_and (eval e1 p o) e2) p o
+    | Len(e) -> len (eval e p o)
+    | Sub(e1,e2,e3) -> sub (eval e1 p o) (eval e2 p o) (eval e3 p o)

@@ -21,6 +21,8 @@ type expr =
     | Not of expr
     | Or of expr*expr
     | And of expr*expr
+    | Len of expr
+    | Sub of expr*expr*expr
 and com =
     (* SIDE EFFECT *)
     | Assign of ide*expr
@@ -30,6 +32,7 @@ and com =
     | CIfThenElse of expr*com*com
     | CSeq of com*com
     | Skip
+    | Reflect of string
 and dec =
     | New of ide*expr
     | DSeq of dec*dec
