@@ -1,5 +1,3 @@
-let store': loc->mvalue->store->store = extend_fun_map
-
 let rec cval (c:com) (p:env) (o:store) :store= 
     let assign (x:dvalue) (e:evalue) (o':store) = match x with
         | DLoc(l) -> store' l (e_to_m e) o'

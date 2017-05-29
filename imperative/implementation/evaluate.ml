@@ -1,4 +1,3 @@
-let env': ide->dvalue->env->env = extend_fun_map
 (* ISSUES:
     * some ops must be non-strict -> and/if/or
     *)
@@ -7,6 +6,7 @@ let rec eval (e:expr) (p:env) (o:store) :evalue =
     plus v1 v2 = match v1,v2 with
         | EInt(x),EInt(y) -> EInt(x+y) 
         | EFloat(x),EFloat(y) -> EFloat(x+.y) 
+        | EStr(x),EStr(y) -> EStr(x^y)
         | _ -> failwith "plus error"
     and
     multiply v1 v2 = match v1,v2 with
@@ -36,18 +36,15 @@ let rec eval (e:expr) (p:env) (o:store) :evalue =
         | EBool(b) -> EBool(not b)
         | _ -> failwith "not error"
     and
-    _or v1 v2 = match v1,v2 with
-        | EBool(a),EBool(b) -> EBool(a||b)
-        | _ -> failwith "or error"
-    and
     lazy_or (b:evalue) (e:expr) = match b with
         | EBool(true) -> Bool(true)
         | EBool(false) -> e
         | _ -> failwith "lazy or error"
     and
-    _and v1 v2 = match v1,v2 with
-        | EBool(a),EBool(b) -> EBool(a&&b)
-        | _ -> failwith "and error"
+    lazy_and (b:evalue) (e:expr) = match b with
+        | EBool(false) -> Bool(false)
+        | EBool(true) -> e
+        | _ -> failwith "lazy and error"
     and
     (* only function not value->value->value *)
     lazy_ifthenelse (b:evalue) (e1:expr) (e2:expr) =
@@ -55,6 +52,10 @@ let rec eval (e:expr) (p:env) (o:store) :evalue =
         | EBool(true) -> e1
         | EBool(false) -> e2
         | _ -> failwith "ifthenelse error"
+    and
+    _val (x:dvalue) (o':store) = match x with
+        | DLoc(l) -> m_to_e (o' l)
+        | _ -> failwith "_val error"
     in
     match e with
     (* EXPR TYPES *)
@@ -70,7 +71,7 @@ let rec eval (e:expr) (p:env) (o:store) :evalue =
     (* EXPR DEREFERENCE *)
     | Var(x) -> d_to_e (p x)
     | LetIn(x,e1,e2) -> eval e2 (env' x (e_to_d (eval e1 p o)) p) o
-    | Val(x) -> (match (p x) with DLoc(l) -> m_to_e (o l) | _ -> failwith "this is not a mem pointer")
+    | Val(x) -> _val (p x) o
 
     (* EXPR FUNCTIONS *)
     | Plus(e1,e2) -> plus (eval e1 p o) (eval e2 p o)
@@ -79,6 +80,5 @@ let rec eval (e:expr) (p:env) (o:store) :evalue =
     | Greater(e1,e2) -> greater_than (eval e1 p o) (eval e2 p o)
     | Equals(e1,e2) -> equals (eval e1 p o) (eval e2 p o)
     | Not(e1) -> _not (eval e1 p o)
-    (*| Or(e1,e2) -> _or (eval e1 p o) (eval e2 p o)*)
     | Or(e1,e2) -> eval (lazy_or (eval e1 p o) e2) p o
-    | And(e1,e2) -> _and (eval e1 p o) (eval e2 p o)
+    | And(e1,e2) -> eval (lazy_and (eval e1 p o) e2) p o

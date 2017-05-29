@@ -23,9 +23,16 @@ and mvalue =
     | MUnbound
 and env = ide -> dvalue
 and store = loc -> mvalue
-let extend_fun_map key value oldmap = function id -> if key=id then value else (oldmap id)
+
 
 (* utility *)
+let extend_fun_map key value oldmap = function id -> if key=id then value else (oldmap id)
+and env': ide->dvalue->env->env = extend_fun_map
+and store': loc->mvalue->store->store = extend_fun_map
+
+let store_size = 100
+and newloc' = newloc store_size
+
 let m_to_d = function
     | MInt(x) -> DInt(x)
     | MStr(x) -> DStr(x)
@@ -47,7 +54,6 @@ and e_to_m = function
     | EFloat(x) -> MFloat(x)
     | EUnbound -> MUnbound
     | ELambda(_) -> failwith "lambdas are not correct modifiable memory"
+
 let e_to_d = function x -> m_to_d (e_to_m x)
 and m_to_e = function x -> d_to_e (m_to_d x)
-
-

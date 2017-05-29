@@ -6,16 +6,12 @@ type expr =
     | Bool of bool
     | Float of float
     | Lambda of ide*expr
-
     (* CONTROL FLOW *)
-    | IfThenElse of expr*expr*expr (* expr if =/ cmd if *)
-
+    | IfThenElse of expr*expr*expr (* not the same as cmd *)
     (* DEREFERENCE *)
-    | Var of ide (*get me this environment variable's value*)
+    | Var of ide (*get environment variable value*)
     | LetIn of ide*expr*expr (* denotational environment extension, a bit different from normal assignment*)
-    (*| LetAnd of (ide*expr) list * expr*)
-    | Val of ide (*get me the value of the memory loc this environment variable is holding*)
-
+    | Val of ide (*dereference environment variable value*)
     (* FUNCTIONS *)
     | Plus of expr*expr
     | Multiply of expr*expr
@@ -25,16 +21,16 @@ type expr =
     | Not of expr
     | Or of expr*expr
     | And of expr*expr
-
-type com =
+and com =
     (* SIDE EFFECT *)
     | Assign of ide*expr
-
     (* CONTROL FLOW *)
     | While of expr*com
     | CIfThen of expr*com (* more stateful to have com list? or does CSeq take care?*)
     | CIfThenElse of expr*com*com
     | CSeq of com*com
     | Skip
-
-type dec = None
+and dec =
+    | New of ide*expr
+    | DSeq of dec*dec
+and prog = Prog of dec*com
