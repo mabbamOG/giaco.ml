@@ -1,0 +1,19 @@
+* giaco.ml
+giaco.ml is an imperative (but also functional) interpreter written in OCAML
+with no interest for speed.
+
+
+The interpreter is capable of handling expressions, commands and declarations
+all within a program.
+
+The program can be parsed into valid code from a file/string thanks to the
+reflection.
+
+Perl-like taint analysis can be performed, albeit it has not been tested
+thoroughly.
+
+- NOTE :: some guards have been added to taint analysis to prove
+  semi-automatic protection is possible, just like in perl. The restricted
+  commands are Reflect and Lambda (actually an expression)
+
+have fun :)

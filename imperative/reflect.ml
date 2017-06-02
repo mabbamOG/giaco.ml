@@ -1,4 +1,3 @@
-#use "interpreter.ml";;
 #load "str.cma";; (*regex Str module*)
 
 (* NOTES:
@@ -131,6 +130,8 @@ let rec creflect (s:string) :com*string =
             let c1,tl = creflect tl
             in let c2,tl = creflect tl
             in CSeq(c1,c2),tl
+    | "Reflect" ->
+            Reflect(tl), ""
     | err -> failwith ("creflect error: '"^err^"' is not a command")
 
 
@@ -147,3 +148,14 @@ let rec dreflect (s:string) :dec*string =
             in let d2,tl = dreflect tl
             in DSeq(d1,d2),tl
     | err -> failwith ("dreflect error: '"^err^"' is not a declaraction")
+
+let reflection (s:string) :prog =
+    let hd,tl = next_unit s
+    in
+    match hd with
+    | "Prog" -> 
+            let ds,tl = dreflect tl
+            in let cs,_ = creflect tl
+            in Prog(ds,cs)
+    | err -> failwith ("reflection error: '"^err^"' is not a Program")
+

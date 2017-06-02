@@ -12,6 +12,7 @@ let rec eval (e:expr) (p:env) (o:store) :evalue =
     multiply v1 v2 = match v1,v2 with
         | EInt(x),EInt(y) -> EInt(x*y) 
         | EFloat(x),EFloat(y) -> EFloat(x*.y) 
+        | EStr(s),EInt(n)|EInt(n),EStr(s) -> EStr(Array.fold_left (^) "" (Array.make n s))
         | _ -> failwith "multiply error"
     and
     apply v1 v2 o = match v1 with

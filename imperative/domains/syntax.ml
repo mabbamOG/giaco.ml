@@ -32,7 +32,7 @@ and com =
     | CIfThenElse of expr*com*com
     | CSeq of com*com
     | Skip
-    (*| Reflect of string*)
+    | Reflect of string
 and dec =
     | New of ide*expr
     | DSeq of dec*dec

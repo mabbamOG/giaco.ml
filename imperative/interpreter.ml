@@ -3,6 +3,8 @@
 #use "domains/semantic.ml";;
 #use "domains/syntax.ml";;
 
+(** REFLECTION **)
+#use "reflect.ml"
 
 (** EVALUATION of EXPR/COM/DEC **)
 #use "implementation/evaluate.ml";;
