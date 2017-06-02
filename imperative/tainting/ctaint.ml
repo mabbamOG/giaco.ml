@@ -1,3 +1,7 @@
+(*
+ * NOTES:
+         * dirty_merge must merge only same values. check if union preserves extra values
+*)
 let rec ctaint (c:com) (p:tenv) (o:tstore) :tstore*tstore =
     let or_reduce (o1:tstore) (o2:tstore) =
         let f k t1 t2 = Some(tor t1 t2)
