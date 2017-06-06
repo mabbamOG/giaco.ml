@@ -17,5 +17,6 @@ let rec cval (c:com) (p:env) (o:store) :store=
     | (While(b,c)) as w -> cval (CIfThen(b,CSeq(c,w))) p o
     | CSeq(c1,c2) -> cval c2 p (cval c1 p o)
     | Skip -> o
-    | Reflect(s) -> let c,_ = creflect s in cval c p o
+    | Reflect(s) -> let c,other = creflect s in
+                    if other == "" then cval c p o else failwith "command incomplete"
 

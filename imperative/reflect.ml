@@ -18,7 +18,7 @@ let testc =
     "CIfThenElse(" ^ e ^ "," ^ c1 ^ "," ^ c2 ^ ")"
 
 
-let next_unit s =
+let next_unit (s:string) :string*string=
     let re = Str.regexp "[(),]+"
     in
     match Str.bounded_split_delim re s 2 with
@@ -155,7 +155,7 @@ let reflection (s:string) :prog =
     match hd with
     | "Prog" -> 
             let ds,tl = dreflect tl
-            in let cs,_ = creflect tl
-            in Prog(ds,cs)
+            in let cs,tl = creflect tl
+            in if tl == "" then Prog(ds,cs) else failwith "program not terminated"
     | err -> failwith ("reflection error: '"^err^"' is not a Program")
 
