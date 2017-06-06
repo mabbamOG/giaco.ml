@@ -33,6 +33,7 @@ and store': loc->mvalue->store->store = extend_fun_map
 let store_size = 100
 let newloc' = newloc store_size
 
+(* utili per la transizione tra domini semantici *)
 let m_to_d = function
     | MInt(x) -> DInt(x)
     | MStr(x) -> DStr(x)
