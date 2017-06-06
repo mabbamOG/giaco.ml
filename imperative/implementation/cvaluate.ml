@@ -13,8 +13,8 @@ let rec cval (c:com) (p:env) (o:store) :store=
 
     (* COM CONTROL FLOW *)
     | CIfThenElse(b,c1,c2) -> cval (lazy_cifthenelse (eval b p o) c1 c2) p o
-    | CIfThen(b,c) -> cval (lazy_cifthenelse (eval b p o) c Skip) p o
-    | While(b,c) -> cval (lazy_cifthenelse (eval b p o) (CSeq(c,While(b,c))) Skip) p o
+    | CIfThen(b,c) -> cval (CIfThenElse(b,c,Skip)) p o
+    | (While(b,c)) as w -> cval (CIfThen(b,CSeq(c,w))) p o
     | CSeq(c1,c2) -> cval c2 p (cval c1 p o)
     | Skip -> o
     | Reflect(s) -> let c,_ = creflect s in cval c p o

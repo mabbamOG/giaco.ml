@@ -40,9 +40,41 @@ let _ =
     checke (Val("x")) (Bool(true))  checkenv (checkc xxx)
 let _ = checke (Val("x")) (Int(0)) checkenv (checkc (CSeq(Skip,Skip)))
 
+let _ =
+    let p  = env' "y" (DLoc(Nativeint.of_int 10)) (env' "x" (DLoc(Nativeint.of_int 9)) emptyenv)
+    and o = store' (Nativeint.of_int 10) (MInt(0)) (store' (Nativeint.of_int 9) (MInt(0)) emptystore)
+    in
+    let o' =
+    let c = While(Not(Equals(Val("x"),Int(10))),
+    CSeq (Assign("y", Plus(Val("y"),Int(5))),
+    Assign("x", Plus(Val("x"),Int(1)))
+    )) 
+    in
+    cval c p o
+    in
+
+    let e1 = Equals(Val("x"),Int(10))
+    and e2 = Equals(Val("y"),Int(50))
+    in
+    eval (And(e1,e2)) p o', eval (Val("x")) p o', eval (Val("y")) p o'
+
 
 ;;print_endline "------------declarations----------------------------------------"
 let _ = 
     let p,o = checkd (New("a",Plus(Str("hello"),Str(" world!"))))
     in
     checke (Val("a")) (Str("hello world!")) p o
+
+let _ =
+    let d = DSeq(New("x",Int(0)),New("y",Int(0)))
+    in
+    let c = While(Not(Equals(Val("x"),Int(10))),
+    CSeq (Assign("y", Plus(Val("y"),Int(5))),
+    Assign("x", Plus(Val("x"),Int(1)))
+    )) 
+    in
+    let p', o' = interpret' (Prog(d,c)) emptyenv emptystore
+    in
+    let e1 = Equals(Val("x"),Int(10)) in
+    let e2 = Equals(Val("y"),Int(50)) in
+    eval (And(e1,e2)) p' o', eval (Val("x")) p' o', eval (Val("y")) p' o';;
