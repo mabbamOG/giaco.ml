@@ -1,9 +1,5 @@
 #load "str.cma";; (*regex Str module*)
 
-(* NOTES:
-    * reflection must check last tl == ""
-    *)
-
 let teste =
     let e1 = "Plus(Int(1), Int(2))"
     and e2 = "Plus(Int(3), Int(4))"
@@ -47,6 +43,17 @@ let rec ereflect (s:string) :expr*string =
             let x,tl = next_unit tl
             in let e,tl = ereflect tl
             in Lambda(x,e), tl
+    | "RecLambda" -> 
+            let xf,tl = next_unit tl
+            in let x,tl = next_unit tl
+            in let e,tl = ereflect tl
+            in RecLambda(xf,x,e), tl
+    | "Rec" ->
+            let xf,tl = next_unit tl
+            in let e,tl = ereflect tl
+            in  Rec(xf,e), tl
+    | "Proc" ->
+            failwith "Proc is restricted in reflection"
     | "IfThenElse" ->
             let e1, tl = ereflect tl
             in let e2, tl = ereflect tl
@@ -103,9 +110,7 @@ let rec ereflect (s:string) :expr*string =
             in let e3,tl = ereflect tl
             in Sub(e1,e2,e3),tl
     | err -> failwith ("ereflect error: '"^err^"' is not an expression")
-
-
-let rec creflect (s:string) :com*string = 
+and creflect (s:string) :com*string = 
     let hd,tl = next_unit s
     in
     match hd with
@@ -113,6 +118,11 @@ let rec creflect (s:string) :com*string =
             let x,tl = next_unit tl
             in let e,tl = ereflect tl
             in Assign(x,e),tl
+    | "Block" ->
+            let d,tl = dreflect tl
+            in let c,tl = creflect tl
+            in Block(d,c),tl
+    | "Call" -> failwith "Call is restricted in reflect"
     | "While" ->
             let e,tl = ereflect tl
             in let c,tl = creflect tl
@@ -130,12 +140,11 @@ let rec creflect (s:string) :com*string =
             let c1,tl = creflect tl
             in let c2,tl = creflect tl
             in CSeq(c1,c2),tl
+    | "CSkip" -> CSkip,tl
     | "Reflect" ->
             Reflect(tl), ""
     | err -> failwith ("creflect error: '"^err^"' is not a command")
-
-
-let rec dreflect (s:string) :dec*string =
+and dreflect (s:string) :dec*string =
     let hd,tl = next_unit s
     in
     match hd with
@@ -147,15 +156,16 @@ let rec dreflect (s:string) :dec*string =
             let d1,tl = dreflect tl
             in let d2,tl = dreflect tl
             in DSeq(d1,d2),tl
+    | "DSkip" -> DSkip,tl
     | err -> failwith ("dreflect error: '"^err^"' is not a declaraction")
 
-let reflection (s:string) :prog =
+let reflect (s:string) :prog =
     let hd,tl = next_unit s
     in
     match hd with
     | "Prog" -> 
             let ds,tl = dreflect tl
             in let cs,tl = creflect tl
-            in if tl == "" then Prog(ds,cs) else failwith "program not terminated"
+            in if tl = "" then Prog(ds,cs) else failwith "program not terminated"
     | err -> failwith ("reflection error: '"^err^"' is not a Program")
 

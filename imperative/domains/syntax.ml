@@ -5,13 +5,18 @@ type expr =
     | Str of string
     | Bool of bool
     | Float of float
+    (* LAMBDAS *)
     | Lambda of ide*expr
+    | RecLambda of ide*ide*expr
+    | Rec of ide*expr
+    (* PROCEDURES *)
+    | Proc of ide list*com (* used by Call *)
     (* CONTROL FLOW *)
-    | IfThenElse of expr*expr*expr (* not the same as cmd *)
-    (* DEREFERENCE *)
-    | Var of ide (*get environment variable value*)
-    | LetIn of ide*expr*expr (* denotational environment extension, a bit different from normal assignment*)
-    | Val of ide (*dereference environment variable value*)
+    | IfThenElse of expr*expr*expr
+    (* DEREFERENCE & BLOCKS *)
+    | Var of ide (*get environment id value*)
+    | LetIn of ide*expr*expr (* functional block *)
+    | Val of ide (* get store id value*)
     (* FUNCTIONS *)
     | Plus of expr*expr
     | Multiply of expr*expr
@@ -26,14 +31,18 @@ type expr =
 and com =
     (* SIDE EFFECT *)
     | Assign of ide*expr
+    (* BLOCKS AND PROCEDURES *)
+    | Block of dec*com (* dec must be local to block *)
+    | Call of expr*expr list
     (* CONTROL FLOW *)
     | While of expr*com
-    | CIfThen of expr*com (* more stateful to have com list? or does CSeq take care?*)
+    | CIfThen of expr*com
     | CIfThenElse of expr*com*com
     | CSeq of com*com
-    | Skip
+    | CSkip
     | Reflect of string
 and dec =
     | New of ide*expr
     | DSeq of dec*dec
+    | DSkip
 and prog = Prog of dec*com

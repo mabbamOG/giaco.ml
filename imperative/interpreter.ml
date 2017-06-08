@@ -1,7 +1,7 @@
 (** PARSING AND INTERNAL DOMAINS **)
 #use "domains/generic.ml";;
-#use "domains/semantic.ml";;
 #use "domains/syntax.ml";;
+#use "domains/semantic.ml";;
 
 (** REFLECTION **)
 #use "reflect.ml"

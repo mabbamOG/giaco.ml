@@ -58,6 +58,15 @@ let _ =
     in
     eval (And(e1,e2)) p o', eval (Val("x")) p o', eval (Val("y")) p o'
 
+let _ =
+    let d = New("a",Int(0)) in
+    let f = Proc(["x";"y"],Block(DSkip,Assign("a",Plus(Val("x"),Val("y"))))) in
+    let d = DSeq(d,New("f",f)) in
+    let c = Call(Val("f"), [Int(1);Int(2)]) in
+    let p',o' = interpret' (Prog(d,c)) emptyenv emptystore in
+
+    eval (Val "a") p' o'
+
 
 ;;print_endline "------------declarations----------------------------------------"
 let _ = 

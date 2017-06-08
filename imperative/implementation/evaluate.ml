@@ -1,6 +1,4 @@
-(* ISSUES:
-    * some ops must be non-strict -> and/if/or
-    *)
+let cval_ref = ref (fun _->assert false)
 let rec eval (e:expr) (p:env) (o:store) :evalue = 
     let 
     plus v1 v2 = match v1,v2 with
@@ -47,7 +45,6 @@ let rec eval (e:expr) (p:env) (o:store) :evalue =
         | EBool(true) -> e
         | _ -> failwith "lazy and error"
     and
-    (* only function not value->value->value *)
     lazy_ifthenelse (b:evalue) (e1:expr) (e2:expr) =
         match b with
         | EBool(true) -> e1
@@ -67,22 +64,35 @@ let rec eval (e:expr) (p:env) (o:store) :evalue =
         | _ -> failwith "sub error"
     in
     match e with
-    (* EXPR TYPES *)
+    (* TYPES *)
     | Int(i) -> EInt(i)
     | Str(s) -> EStr(s)
     | Bool(b) -> EBool(b)
     | Float(f) -> EFloat(f)
-    | Lambda(x,e) -> ELambda(function v -> function o' -> eval e (env' x v p) o')
 
-    (* EXPR CONTROL FLOW *)
+    (* SUBPROGRAMS *)
+    | Lambda(x,e) -> ELambda(function v -> function o' -> eval e (env' x v p) o')
+    | RecLambda(xf,x,e) -> 
+            let rec f = function v -> function o' -> eval e (env' xf (DLambda(f)) (env' x v p)) o' in
+            ELambda(f)
+    | Rec(xf,e) -> (match e with
+        | Lambda(x,e) -> eval (RecLambda(xf,x,e)) p o
+        | _ -> failwith "only a function may be recursive...")
+
+    (* PROCEDURE *)
+    | Proc(xl,c) -> (match c with
+        | Block(_) -> EProc(function vl -> function o' -> let p',o'= new'' xl vl p o' in !cval_ref c p' o')
+        | _-> failwith "not a valid proc")
+
+    (* CONTROL FLOW *)
     | IfThenElse(b,e1,e2) -> eval (lazy_ifthenelse (eval b p o) e1 e2) p o
 
-    (* EXPR DEREFERENCE *)
+    (* DEREFERENCE & BLOCKS *)
     | Var(x) -> d_to_e (p x)
     | LetIn(x,e1,e2) -> eval e2 (env' x (e_to_d (eval e1 p o)) p) o
     | Val(x) -> _val (p x) o
 
-    (* EXPR FUNCTIONS *)
+    (* FUNCTIONS *)
     | Plus(e1,e2) -> plus (eval e1 p o) (eval e2 p o)
     | Multiply(e1,e2) -> multiply (eval e1 p o) (eval e2 p o)
     | Apply(e1,e2) -> apply (eval e1 p o) (eval e2 p o) o
