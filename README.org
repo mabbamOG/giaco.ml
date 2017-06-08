@@ -29,7 +29,7 @@ The interpreter works with 3 domains:
   - environment :: this is a mapping representing internal non-mutable state. It maps variables (identifiers) to values.
   - store :: this is a mapping representing internal mutable state. It allows aliasing of 2 identifiers for one value. It maps addresses (pointers or locations) to values.
   - denotable values :: these are values contained in the environment. Basic allowed types are  Integer, Boolean, Float, String and Locations.
-  - mutanle memory values :: these are values contained in the store. Basic allowed types are Integer, Boolean, Float, String.
+  - mutable memory values :: these are values contained in the store. Basic allowed types are Integer, Boolean, Float, String.
 
 The interpreter itself is implemented by 3 main functions:
 - eval :: this function basically maps expressions to evaluatable values
@@ -37,7 +37,7 @@ The interpreter itself is implemented by 3 main functions:
 - dval :: this function maps declarations to a new internal state (environment + store)
 
 Some important choices:
-- memory is viewed as a mapping. it is therefore impossible to modify in ocaml. changin the type signature of the interpreter would allow this
+- memory is viewed as a mapping. it is therefore impossible to modify in ocaml. changing the type signature of the interpreter would allow this
 - because memory is a mapping, new locations are simulated by randomly selecting a new location based on given store size
 - regular expressions are used in reflection, so the Str module must be available
 - fixed points are calculated through ocamls's ~function~ and ~let rec~ operations
@@ -57,30 +57,34 @@ and subsequent testing may be performed:
 - : evalue = EInt 7
 #+END_SRC
 ** EXPRESSIONS
-| EXAMPLE                                       | DESCRIPTION                                                         |
-|-----------------------------------------------+---------------------------------------------------------------------|
-| Int(3)                                        | basic integer                                                       |
-| Str("hello world")                            | basic ASCII string                                                  |
-| Bool(true)                                    | basic boolean                                                       |
-| Float(4.5)                                    | basic float                                                         |
-| Lambda("x", <exp containing x>)               | typical function                                                    |
-| RecLambda("f", "x", <exp containing f and x>) | typical recursive function                                          |
-| Rec("f", Lambda(....))                        | just another way to define recursive lambdas                        |
-| Proc(["x";"y";"z";...], Block(...))           | this is a procedure, check the commands section                     |
-| IfThenElse(Bool(true), .., ..)                | control flow element                                                |
-| Var("x")                                      | this is a way to retrieve an immutable variable's content           |
-| LetIn("x", e1, e2)                           | this is a way to nest functional blocks and scopes                  |
-| Val("x")                                      | this is a way to retrieve a mutable variable's content              |
-| Plus(e1, e2)                                  | plus function, applies to: Int, Str, Float                          |
-| Multiply(e1, e2)                              | multiply function, appliest to: Int, Str, Float                     |
-| Apply(e1, e2)                                 | typical function application, e1 is of type: Lambda, RecLambda, Rec |
-| Equals(e1, e2)                                | like C's ~==~                                                       |
-| Greater(e1, e2)                               | like C's ~>~                                                        |
-| Not(e)                                        | like C's ~!~                                                        |
-| Or(e1, e2)                                    | like C's ~¦¦~                  |
-| And(e1, e2)                                   | like C's ~&&~                                                       |
-| Len( Str(...))                                | gets the length of a St                                             |
-| Sub(Str(...), i, j)                           | gets a substring. i and j of type Int.                              |
+| EXAMPLE                                                    | DESCRIPTION                                                                    |
+|------------------------------------------------------------+--------------------------------------------------------------------------------|
+| Int(3)                                                     | basic integer                                                                  |
+| Str("hello world")                                         | basic ASCII string                                                             |
+| Bool(true)                                                 | basic boolean                                                                  |
+| Float(4.5)                                                 | basic float                                                                    |
+| Lambda("x", <exp containing x>)                            | typical function                                                               |
+| RecLambda("f", "x", <exp containing f and x>)              | typical recursive function                                                     |
+| Rec("f", Lambda(....))                                     | just another way to define recursive lambdas                                   |
+| Proc(["x";"y";"z";...], Block(...))                        | this is a procedure, check the commands section                                |
+| IfThenElse(Bool(true), .., ..)                             | control flow element                                                           |
+| Var("x")                                                   | this is a way to retrieve an immutable variable's content                      |
+| LetIn("x", e1, e2)                                         | this is a way to nest functional blocks and scopes                             |
+| Val("x")                                                   | this is a way to retrieve a mutable variable's content                         |
+| Plus(e1, e2)                                               | plus function, applies to: Int, Str, Float                                     |
+| Multiply(e1, e2)                                           | multiply function, appliest to: Int, Str, Float                                |
+| Apply(e1, e2)                                              | typical function application, e1 is of type: Lambda, RecLambda, Rec            |
+| Equals(e1, e2)                                             | like C's ~==~                                                                  |
+| Greater(e1, e2)                                            | like C's ~>~                                                                   |
+| Not(e)                                                     | like C's ~!~                                                                   |
+| Or(e1, e2)                                                 | like C's ~¦¦~                                                                  |
+| And(e1, e2)                                                | like C's ~&&~                                                                  |
+| Len( Str(...))                                             | gets the length of a St                                                        |
+| Sub(Str(...), i, j)                                        | gets a substring. i and j of type Int.                                         |
+| Lower(Str(..))                                             | reduces a string to lowercase, like Python's ~lower()~                         |
+| Upper(Str(...))                                            | reduces a string to uppercase, like Python's ~upper()~                         |
+| Trim(Str(...))                                             | trims whitespace from a string, like Python's ~s.trim()~                       |
+| Replace(<string to be replace>,<replacer string>,<string>) | replaces a string with another string in a string, like Python's ~s.replace()~ |
 ** COMMANDS
 | EXAMPLE                | DESCRIPTION                                                                                          |
 |------------------------+------------------------------------------------------------------------------------------------------|
