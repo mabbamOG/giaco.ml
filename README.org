@@ -90,6 +90,7 @@ and subsequent testing may be performed:
 * String extension
 A few functions have been added to deal with the domain of strings.
 Functions such as these are taken from the Python langauge, which has a *very* extensive and popularstandard library.
+- length comparison (~Greater~)
 - concatenation (~Plus~ has been extended to allow this)
 - substring (~Sub~)
 - repetition (~Multiply~ has been extended to allow this
@@ -168,3 +169,76 @@ Our analysis is based on 2 simple concepts:
      - If the branches are subject to a condition (such as in a ~CIfThenElse~) then a =Dirty= condition will mean an attacker may choose amongst any of the 2 branches, therefore dirtying all 
        assignments of shared key (amongst the 2 branches). If the condition is =Clean=, then the normal merge has already evaluated taint with ~tor~.
 * TODO Examples
+check test.ml for some code examples.
+** Numbers
+| INPUT                            | OUTPUT                |
+|----------------------------------+-----------------------|
+| Int(5)                           | EInt 5       |
+| Float(133.7)                     | EFloat 133.7 |
+| Plus(Int(1), Int(2))             | EInt 3       |
+| Multiply(Float(2.5),Float(10.0)) | EFloat 25    |
+| Greater(Int(3),Int(5))           | EBool false  |
+** Booleans
+| INPUT                                                            | OUTPUT               |
+|------------------------------------------------------------------+----------------------|
+| Bool(true)                                                       | EBool true  |
+| Not(Bool(true))                                                  | EBool false |
+| And(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1))) | EBool false |
+| Or(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1)))  | EBool true  |
+** Strings
+| INPUT                                                   | OUTPUT                                |
+|---------------------------------------------------------+---------------------------------------|
+| Str("hello world")                                      | EStr "hello world"                    |
+| Plus(Str("hello "),Str("world!"))                       | EStr "hello world!"                   |
+| Multiply(Str("abc"),Int(10))                            | EStr "abcabcabcabcabcabcabcabcabcabc" |
+| Len(Multiply(Str("abc"),Int(10)))                       | EInt 30                               |
+| Greater(Str("two"),Str("three"))                        | EBool false                           |
+| Sub(Str("threeeeeeee"),Int(2),Int(10))                  | EStr "reeeeeeee"                      |
+| Upper(Str("im so lonely"))                              | EStr "IM SO LONELY"                   |
+| Lower(Upper(Str("im so lonely")))                       | EStr "im so lonely"                   |
+| Trim(Str("     italia      "))                          | EStr "italia"                         |
+| Replace(Str("hello"),Str("goodbye"),Str("hello world!")) | EStr "goodbye world!"                |
+** Functional Control Flow
+| INPUT                                                                      | OUTPUT            |
+|----------------------------------------------------------------------------+-------------------|
+| IfThenElse(Bool(true), Int(1337), Str("i am"))                             | EInt 1337         |
+| IfThenElse(Not(Greater(Str("bob"),Str("mouse"))),Str("ciao mondo"),Int(5)) | EStr "ciao mondo" |
+** Functional Blocks
+| INPUT                                                                                       | OUTPUT  |
+|---------------------------------------------------------------------------------------------+---------|
+| Var("x")                                                                                    | EInt 20 |
+| xxx = LetIn("a",Int(3),Multiply(Var("a"),Var("a")))                                         | EInt 9  |
+| LetIn("a",Int(5),(LetIn("b",xxx,LetIn("c",Int(6),Plus(Var("a"),Plus(Var("b"),Var("c"))))))) | EInt 20 |
+** Functional Subprograms
+| INPUT                                                                                                                                               | OUTPUT       |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------+--------------|
+| Apply(Lambda("x", Plus(Var("x"), Int(1))), Int(99))                                                                                                 | EInt 100     |
+| Apply(RecLambda("sum", "x", IfThenElse(Equals(Var("x"), Int(0)), Int(1), Multiply(Var("x"), Apply(Var("sum"), Plus(Var("x"), Int(-1)))))), Int(10)) | EInt 3628800 |
+** Imperative State Change
+| INPUT                                 | VARIABLE OUTPUT |
+|---------------------------------------+-----------------|
+| Val("y")                              | EInt 10         |
+| Assign("y", Plus(Val("y"), Val("y"))) | EInt 20         |
+** Imperative Control Flow
+| INPUT                                                                                                                   | VARIABLE OUTPUT |
+|-------------------------------------------------------------------------------------------------------------------------+-----------------|
+| Val("y"), Val("z")                                                                                                      | EInt 10, EInt 0 |
+| CIfThenElse(Not(Equals(Val("y"),Int(11))), Assign("y", Int(50)))                                                        | EInt 50, EInt 0 |
+| While(Not(Equals(Val("y"), Int(100))), CSeq(Assign("y", Plus(Val("y"), Int(1))), Assign("z", Plus(Val("z"), Int(1)))) ) | EInt 50, EInt 50 |
+** Imperative Blocks
+| INPUT                                                           | OUTPUT          |
+|-----------------------------------------------------------------+-----------------|
+| Val("y"), Val("z")                                              | EInt 10, EInt 0 |
+| Block(New("z", Int(1000)), Assign("y", Plus(Val "y", Val "z"))) | EInt 1010, EInt 0 |
+** Imperative Subprograms
+| INPUT                                                                              | OUTPUT          |
+|------------------------------------------------------------------------------------+-----------------|
+| Val("y"), Val("z")                                                                 | EInt 10, EInt 0 |
+| f = Proc(["z"], Block(DSkip, Assign("y", Val("z"))))) in Call (Val "f", [Val "z"]) | EInt 0, EInt 0  |
+** Declarations
+| INPUT                                     | OUTPUT                                                         |
+|-------------------------------------------+----------------------------------------------------------------|
+| Val("y"), Val("z")                        | Failure 'y' not in environment, Failure 'z' not in environment |
+| DSeq(New("y", Int(10)), New("z", Int(0))) | EInt 10, EInt 0                                                |
+** Reflection
+** Taint Analysis

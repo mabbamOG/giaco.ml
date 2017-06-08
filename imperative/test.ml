@@ -21,6 +21,8 @@ checke' (Int(20)) (LetIn("a",Int(5),(LetIn("b",xxx,LetIn("c",Int(6),Plus(Var("a"
 let _ = checke' (Bool(false)) (And(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1))))
 let _ = checke' (Bool(true)) (Or(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1))))
 
+let e = Apply(RecLambda("sum", "x", IfThenElse(Equals(Var("x"), Int(0)), Int(1), Multiply(Var("x"), Apply(Var("sum"), Plus(Var("x"), Int(-1)))))), Int(3))
+
 
 ;;print_endline "------------commands--------------------------------------------"
 let _ = checke (Val("x")) (Int(13)) checkenv (checkc (Assign("x",Plus(Int(5),Int(8)))))
