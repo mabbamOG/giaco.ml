@@ -5,7 +5,7 @@
 
 (** REFLECTION AND TAINT-ANALYSIS **)
 #use "reflect.ml";;
-#use "taint-analysis";;
+#use "taint-analysis.ml";;
 
 (** EVALUATION of EXPR/COM/DEC **)
 #use "implementation/evaluate.ml";;

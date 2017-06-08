@@ -1,19 +1,79 @@
 * giaco.ml
-giaco.ml is an imperative (but also functional) interpreter written in OCAML
-with no interest for speed.
+giaco.ml is an imperative (but also functional) EDSL interpreter written in OCAML.
 
+The interpreter is capable of handling expressions, commands and declarations all within a program.
 
-The interpreter is capable of handling expressions, commands and declarations
-all within a program.
+A program can be parsed into valid code from a file/string thanks to reflection.
 
-The program can be parsed into valid code from a file/string thanks to the
-reflection.
+Static taint analysis can be performed, guards have been also
+added to the Reflect command as a form of protection, similar to perl.
+* TODO Design Choices
+The interpreter works with 3 domains:
+- generic :: this domain is shared amongst the syntax (external) and semantic (internal) domains
+- syntax :: this domain contains all the domains accessible to the user. it features 3 sub-domains
+  - expressions :: these are entities which may be mapped directly to a value
+  - commands :: these are entities which allow modifying the global state of the program, though allocating new memory is not allowed
+  - declarations :: these are entities which allow allocation of new memory in the global state
+- semantic :: this domain is used for representing the internal state of the interpreter.
+  - evaluatable values :: these are values that may be directly evaluated from an expressions. they represent the base internal type for the interpreter. Basic allowed types are Integer, Boolean, Float, String and Subprograms.
+  - environment :: this is a mapping representing internal non-mutable state. It maps variables (identifiers) to values.
+  - store :: this is a mapping representing internal mutable state. It allows aliasing of 2 identifiers for one value. It maps addresses (pointers or locations) to values.
+  - denotable values :: these are values contained in the environment. Basic allowed types are  Integer, Boolean, Float, String and Locations.
+  - mutanle memory values :: these are values contained in the store. Basic allowed types are Integer, Boolean, Float, String.
 
-Perl-like taint analysis can be performed, albeit it has not been tested
-thoroughly.
+The interpreter itself is implemented by 3 main functions:
+- eval :: this function basically maps expressions to evaluatable values
+- cval :: this function maps commands to a changed internal state (store)
+- dval :: this function maps declarations to a new internal state (environment + store) 
+* Usage
+the interpreter can be loaded up with
+#+BEGIN_SRC ocaml
+> #use "giaco.ml";;
+#+END_SRC
 
-- NOTE :: some guards have been added to taint analysis to prove
-  semi-automatic protection is possible, just like in perl. The restricted
-  commands are Reflect, for now.
-
-have fun :)
+and subsequent testing may be performed:
+#+BEGIN_SRC ocaml
+> let e = Plus(Int(3), Int(4)) in eval e emptyenv emptystore
+- : evalue = EInt 7
+#+END_SRC
+** EXPRESSIONS
+| Int(3)                                        | basic integer                                                       |
+| Str("hello world")                            | basic string                                                        |
+| Bool(true)                                    | basic boolean                                                       |
+| Float(4.5)                                    | basic float                                                         |
+| Lambda("x", <exp containing x>)               | typical function                                                    |
+| RecLambda("f", "x", <exp containing f and x>) | typical recursive function                                          |
+| Rec("f", Lambda(....))                        | just another way to define recursive lambdas                        |
+| Proc(["x";"y";"z";...], Block(...))          | this is a procedure, check the commands section                     |
+| IfThenElse(Bool(true), .., ..)                | control flow element                                                |
+| Var("x")                                      | this is a way to retrieve an immutable variable's content           |
+| LetInt("x", e1, e2)                           | this is a way to nest functional blocks and scopes                  |
+| Val("x")                                      | this is a way to retrieve a mutable variable's content              |
+| Plus(e1, e2)                                  | plus function, applies to: Int, Str, Float                          |
+| Multiply(e1, e2)                              | multiply function, appliest to: Int, Str, Float                     |
+| Apply(e1, e2)                                 | typical function application, e1 is of type: Lambda, RecLambda, Rec |
+| Equals(e1, e2)                                | like C's ~==~                                                       |
+| Greater(e1, e2)                               | like C's ~>~                                                        |
+| Not(e)                                        | like C's ~!~                                                        |
+| Or(e1, e2)                                    | like C's ~||~                                                        |
+| And(e1, e2)                                   | like C's ~&&~                                                       |
+| Len( Str(...))                                | gets the length of a St                                             |
+| Sub(Str(...), i, j)                           | gets a substring. i and j of type Int.                              |
+** COMMANDS
+| Assign("x", e)         | this changes the mutable value for the variable "x". e is an expression                              |
+| Block(d, c)            | this is an imperative block with nested scope. d is a declaration, see its section for more detail   |
+| Call(p, [e1;e2;e3;..]) | this is an application of an imperative procedure. p is of type Proc (check the expressions section) |
+| While(e, c)            | like C's ~while(e){c}~, e is an expression and c a command                                           |
+| CIfThen(e, c)          | like C's ~if(e){c}~                                                                                  |
+| CIfThenElse(e, c1, c2) | like C's ~if(e){c1}else{c2}~                                                                         |
+| CSeq(c1, c2)           | like C's ~;~ it allows concatenation of commands                                                     |
+| CSkip                  | like C's ~void~ and Python's ~pass~, it does nothing                                                 |
+| Reflect(Str(...))      | reflection, see the reflection section                                                               |
+** DECLARATIONS
+| New("x", e)  | this allocates a new mutable variable of value e (an expression) |
+| DSeq(d1, d2) | allows concatenation of declarations                             |
+| DSkip        | does nothing                                                     |
+* String extension
+* Reflection extension
+* Taint-Analysis extension
+* Tests
