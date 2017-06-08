@@ -1,0 +1,416 @@
+% Created 2017-06-09 Fri 01:51
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{tabularx}
+\author{Mario A. Barbara \\ Andrea Cancellieri}
+\date{}
+\title{giaco.ml\\\medskip
+\large an interpreted EDSL written in OCAML}
+\hypersetup{
+ pdfauthor={Mario A. Barbara \\ Andrea Cancellieri},
+ pdftitle={giaco.ml},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 25.2.1 (Org mode 9.0.7)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\part{Introduction}
+\label{sec:org743990e}
+giaco.ml is an imperative (but also functional) EDSL interpreter written in OCAML.
+
+The interpreter is capable of handling expressions, commands and declarations all within a program.
+
+A program can be parsed into valid code from a file/string thanks to reflection.
+
+Static taint analysis can be performed, guards have been also
+added to the Reflect command as a form of protection, similar to perl.
+
+The main execution functions are: \texttt{interpret} (or \texttt{interpret'} which returns also the declarations' output), \texttt{reflect} and \texttt{taint\_analysis} which all operate on a \texttt{Prog(ds,cs)} construct.
+\part{Design Choices}
+\label{sec:org918b1d7}
+The interpreter works with 3 domains:
+\begin{description}
+\item[{generic}] this domain is shared amongst the syntax (external) and semantic (internal) domains
+\item[{syntax}] this domain contains all the domains accessible to the user. it features 3 sub-domains
+\begin{description}
+\item[{expressions}] these are entities which may be mapped directly to a value
+\item[{commands}] these are entities which allow modifying the global state of the program, though allocating new memory is not allowed
+\item[{declarations}] these are entities which allow allocation of new memory in the global state
+\end{description}
+\item[{semantic}] this domain is used for representing the internal state of the interpreter.
+\begin{description}
+\item[{evaluatable values}] these are values that may be directly evaluated from an expressions. they represent the base internal type for the interpreter. Basic allowed types are Integer, Boolean, Float, String and Subprograms.
+\item[{environment}] this is a mapping representing internal non-mutable state. It maps variables (identifiers) to values.
+\item[{store}] this is a mapping representing internal mutable state. It allows aliasing of 2 identifiers for one value. It maps addresses (pointers or locations) to values.
+\item[{denotable values}] these are values contained in the environment. Basic allowed types are  Integer, Boolean, Float, String and Locations.
+\item[{mutable memory values}] these are values contained in the store. Basic allowed types are Integer, Boolean, Float, String.
+\end{description}
+\end{description}
+
+The interpreter itself is implemented by 3 main functions:
+\begin{description}
+\item[{eval}] this function basically maps expressions to evaluatable values
+\item[{cval}] this function maps commands to a changed internal state (store)
+\item[{dval}] this function maps declarations to a new internal state (environment + store)
+\end{description}
+
+Some important choices:
+\begin{itemize}
+\item memory is viewed as a mapping. it is therefore impossible to modify in ocaml. changing the type signature of the interpreter would allow this
+\item because memory is a mapping, new locations are simulated by randomly selecting a new location based on given store size
+\item regular expressions are used in reflection, so the Str module must be available
+\item fixed points are calculated through ocamls's \texttt{function} and \texttt{let rec} operations
+\item to ease debugging, the interpreted is not compiled but interpreted in an ocaml shell with the \texttt{\#use "file.ml"} construct
+\item since the program is interpreted, \texttt{let and} between multiple files is not available, this has been fixed by using mutable state pointers to future functions. These pointers will be updated
+when the function is created.
+\item many utility functions have been created to ease debugging. most notable are \texttt{emptyenv} \texttt{emptystore} \texttt{tenv'} \texttt{tstore'} \texttt{tnew'} which simplify dealing with memory
+\end{itemize}
+\part{Usage}
+\label{sec:org9296b6f}
+the interpreter can be loaded up with
+\begin{verbatim}
+> #use "giaco.ml";;
+\end{verbatim}
+
+and subsequent testing may be performed:
+\begin{verbatim}
+> let e = Plus(Int(3), Int(4)) in eval e emptyenv emptystore
+- : evalue = EInt 7
+\end{verbatim}
+\chapter{EXPRESSIONS}
+\label{sec:org9b9bccb}
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+EXAMPLE & DESCRIPTION\\
+\hline
+Int(3) & basic integer\\
+Str("hello world") & basic ASCII string\\
+Bool(true) & basic boolean\\
+Float(4.5) & basic float\\
+Lambda("x", <exp containing x>) & typical function\\
+RecLambda("f", "x", <exp containing f and x>) & typical recursive function\\
+Rec("f", Lambda(\ldots{}.)) & just another way to define recursive lambdas\\
+Proc(["x";"y";"z";\ldots{}], Block(\ldots{})) & this is a procedure, check the commands section\\
+IfThenElse(Bool(true), .., ..) & control flow element\\
+Var("x") & this is a way to retrieve an immutable variable's content\\
+LetIn("x", e1, e2) & this is a way to nest functional blocks and scopes\\
+Val("x") & this is a way to retrieve a mutable variable's content\\
+Plus(e1, e2) & plus function, applies to: Int, Str, Float\\
+Multiply(e1, e2) & multiply function, appliest to: Int, Str, Float\\
+Apply(e1, e2) & typical function application, e1 is of type: Lambda, RecLambda, Rec\\
+Equals(e1, e2) & like C's \texttt{==}\\
+Greater(e1, e2) & like C's \texttt{>}\\
+Not(e) & like C's \texttt{!}\\
+Or(e1, e2) & like C's \texttt{¦¦}\\
+And(e1, e2) & like C's \texttt{\&\&}\\
+Len( Str(\ldots{})) & gets the length of a St\\
+Sub(Str(\ldots{}), i, j) & gets a substring. i and j of type Int.\\
+Lower(Str(..)) & reduces a string to lowercase, like Python's \texttt{lower()}\\
+Upper(Str(\ldots{})) & reduces a string to uppercase, like Python's \texttt{upper()}\\
+Trim(Str(\ldots{})) & trims whitespace from a string, like Python's \texttt{s.trim()}\\
+Replace(<string to be replace>,<replacer string>,<string>) & replaces a string with another string in a string, like Python's \texttt{s.replace()}\\
+\end{tabularx}
+\end{center}
+\chapter{COMMANDS}
+\label{sec:orgfff1c39}
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+EXAMPLE & DESCRIPTION\\
+\hline
+Assign("x", e) & this changes the mutable value for the variable "x". e is an expression\\
+Block(d, c) & this is an imperative block with nested scope. d is a declaration, see its section for more detail\\
+Call(p, [e1;e2;e3;..]) & this is an application of an imperative procedure. p is of type Proc (check the expressions section)\\
+While(e, c) & like C's \texttt{while(e)\{c\}}, e is an expression and c a command\\
+CIfThen(e, c) & like C's \texttt{if(e)\{c\}}\\
+CIfThenElse(e, c1, c2) & like C's \texttt{if(e)\{c1\}else\{c2\}}\\
+CSeq(c1, c2) & like C's \texttt{;} it allows concatenation of commands\\
+CSkip & like C's \texttt{void} and Python's \texttt{pass}, it does nothing\\
+Reflect(Str(\ldots{})) & reflection, see the reflection section\\
+\end{tabularx}
+\end{center}
+\chapter{DECLARATIONS}
+\label{sec:orgf74eecc}
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+EXAMPLE & DESCRIPTION\\
+\hline
+New("x", e) & this allocates a new mutable variable of value e (an expression)\\
+DSeq(d1, d2) & allows concatenation of declarations\\
+DSkip & does nothing\\
+\end{tabularx}
+\end{center}
+\part{String extension}
+\label{sec:org555c7cd}
+A few functions have been added to deal with the domain of strings.
+Functions such as these are taken from the Python langauge, which has a \textbf{very} extensive and popularstandard library.
+\begin{itemize}
+\item length comparison (\texttt{Greater})
+\item concatenation (\texttt{Plus} has been extended to allow this)
+\item substring (\texttt{Sub})
+\item repetition (\texttt{Multiply} has been extended to allow this
+\item length (\texttt{Len})
+\item lowercase (\texttt{Lower})
+\item uppercase (\texttt{Upper})
+\item trim (\texttt{Trim}), trims all whitespace
+\item Replace (\texttt{Replace})
+\end{itemize}
+
+Check the examples section for some examples
+\part{Reflection extension}
+\label{sec:orgcd5fafe}
+Reflection consists of allowing any string to be evaluated by the interpreter on the fly. In Python this is akeen to the \texttt{eval} function.
+This is also the most essential step to having a good interpreter: the interactive console for Python,
+ one of the most popular interpreted languages, is often called \textbf{R.E.P.L.} (Read Eval Print Loop).
+
+The syntax of \emph{giaco.ml} has been extended with the \texttt{Reflect} command, which allows on the fly "evaluation" of commands.
+Unfortuately our language's command syntax is recursive, and furthermore the \texttt{CIfThenElse} command
+uses expressions as boolean conditions, which are also recursive.
+Therefore, a full blown parser needed to be built to give a string some depth (such as that of an AST).
+
+The reasoning is as follows:
+\begin{enumerate}
+\item a function called \texttt{next\_unit} is charged with grabbing the first word up until a \texttt{(} or \texttt{)} or \texttt{,} or multiple consecutive repetitions.
+\item to get the command to match against, \texttt{next\_unit} is called on the string and the result is matched against some constants, taken from the language's syntax
+\item to get a command's arguments (which may be recursive and contain any amount of \texttt{( ) ,}, caution must be taken to correctly identify the argument boundaries, which are all separated by a \texttt{,} comma. 2 options are given:
+\begin{description}
+\item[{iterative}] by counting the number of open parentheses matched thus far, and decreasing each time a closed parentheses is found,
+it is possible to correctly identify the recursive structure of the syntax.
+\item[{recursive (but faster)}] since we know the amount of parameter each command needs, it is
+simply required to recursively reflect upon the arguments' string as many times as needed.
+Of course, each time a command is consumed, it shall return the arguments' string, so as to allow its father to continue
+looking for arguments.
+\end{description}
+\end{enumerate}
+
+Our interpreter implements the recursive and faster technique. Here is a simple ditaa drawing to illustrate
+the flow of this technique:
+
+\begin{verbatim}
++------------------------------+
+|  A(B(C(1), C(2), C(3), ...)) |
+|                              |
++---------------+--------------+
+                |
+                v
+
++---+---------------------------+
+| A | B   C   1   C   2
++-------+-----------------------+
+    | B | C   1   C   2           <----+
+    +-------+-------------------+      |
+        | C | 1   C   2                |
+        +-------+---------------+      |
+            | 1 | C   2       |--------+
+        --------+---------------+      |
+        | C | 2                        |
+        +-------+---------------+      |
+            | 2 |             |--------+
+            +---+---------------+
+\end{verbatim}
+\part{Taint-Analysis extension}
+\label{sec:org51dea90}
+Static taint analysis consists of understanding how much damage some unsafe elements (of undefined value but defined nature) will yield.
+A classic example is an unsanitized input on a HTML form, which may result in an SQL Injection attack and damage your company's most valuable assets.
+
+In our simple language, we have no operations that deal with the outside world (yet). We are thereforce forced to ask the user to label some variables
+in the environment and store as \texttt{Clean} or \texttt{Dirty}. Afterwards, we will analyze a program and check the \texttt{Taint} for every possible variable assignment.
+The semantic domains have been revisited, allowing memory (environment and store) to only contain tainted values (or store locations, in the environment's case).
+
+Our analysis is based on 2 simple concepts:
+\begin{description}
+\item[{pure evaluation}] a \texttt{tor} function will take 2 taints and return \texttt{Dirty} if one of them is as well, otherwise \texttt{Clean}. This process can be lazy.
+\begin{itemize}
+\item All constants are \texttt{Clean}
+\item If a function is involved (such as a \texttt{Lambda}) then the formal parameters are identified as \texttt{Clean} (as they cannot be expressions) and then the body is analyzed. If the body is clean, the function is clean
+\item A function application requires a \texttt{tor} amongst the analysis of the function itself and the passed parameter.
+\item If a condition is involved, then 2 outputs are possible. If the condition is \texttt{Dirty}, that means the attacker may choose either output and (regardless of the output's default taint)
+will result in a \texttt{Dirty} value. If the condition is \texttt{Clean}, then either output may occur during execution, so they must be passed to \texttt{tor}.
+\end{itemize}
+\item[{imperative state change}] all possible assignments in a command are gathered. Only the latest possible assignments matter (if i set \texttt{x} to \texttt{Dirty} and then \texttt{Clean} it is \texttt{Clean}).
+\begin{itemize}
+\item Afterwards, we check whether 2 branches are possible: if they are, a \texttt{tor} function must be applied to all assignments of same key, merging the 2 branches.
+\item If the branches are subject to a condition (such as in a \texttt{CIfThenElse}) then a \texttt{Dirty} condition will mean an attacker may choose amongst any of the 2 branches, therefore dirtying all 
+assignments of shared key (amongst the 2 branches). If the condition is \texttt{Clean}, then the normal merge has already evaluated taint with \texttt{tor}.
+\end{itemize}
+\end{description}
+\part{Examples}
+\label{sec:org2172f9f}
+check test.ml for some code examples.
+\chapter{Numbers}
+\label{sec:orgad91d21}
+\begin{center}
+\begin{tabularx}{\textwidth}{XX}
+INPUT & OUTPUT\\
+\hline
+Int(5) & EInt 5\\
+Float(133.7) & EFloat 133.7\\
+Plus(Int(1), Int(2)) & EInt 3\\
+Multiply(Float(2.5),Float(10.0)) & EFloat 25\\
+Greater(Int(3),Int(5)) & EBool false\\
+\end{tabularx}
+\end{center}
+\chapter{Booleans}
+\label{sec:orge0d74d6}
+\begin{center}
+\begin{tabularx}{\textwidth}{Xl}
+INPUT & OUTPUT\\
+\hline
+Bool(true) & EBool true\\
+Not(Bool(true)) & EBool false\\
+And(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1))) & EBool false\\
+Or(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1))) & EBool true\\
+\end{tabularx}
+\end{center}
+\chapter{Strings}
+\label{sec:orgb07dc6b}
+\begin{center}
+\begin{tabularx}{\textwidth}{XX}
+INPUT & OUTPUT\\
+\hline
+Str("hello world") & EStr "hello world"\\
+Plus(Str("hello "),Str("world!")) & EStr "hello world!"\\
+Multiply(Str("abc"),Int(10)) & EStr "abcabcabcabcabcabcabcabcabcabc"\\
+Len(Multiply(Str("abc"),Int(10))) & EInt 30\\
+Greater(Str("two"),Str("three")) & EBool false\\
+Sub(Str("threeeeeeee"),Int(2),Int(10)) & EStr "reeeeeeee"\\
+Upper(Str("im so lonely")) & EStr "IM SO LONELY"\\
+Lower(Upper(Str("im so lonely"))) & EStr "im so lonely"\\
+Trim(Str("     italia      ")) & EStr "italia"\\
+Replace(Str("hello"),Str("goodbye"),Str("hello world!")) & EStr "goodbye world!"\\
+\end{tabularx}
+\end{center}
+\chapter{Functional Control Flow}
+\label{sec:org775055a}
+\begin{center}
+\begin{tabularx}{\textwidth}{Xl}
+INPUT & OUTPUT\\
+\hline
+IfThenElse(Bool(true), Int(1337), Str("i am")) & EInt 1337\\
+IfThenElse(Not(Greater(Str("bob"),Str("mouse"))),Str("ciao mondo"),Int(5)) & EStr "ciao mondo"\\
+\end{tabularx}
+\end{center}
+\chapter{Functional Blocks}
+\label{sec:org62edac2}
+\begin{center}
+\begin{tabularx}{\textwidth}{Xl}
+INPUT & OUTPUT\\
+\hline
+Var("x") & EInt 20\\
+xxx = LetIn("a",Int(3),Multiply(Var("a"),Var("a"))) & EInt 9\\
+LetIn("a",Int(5),(LetIn("b",xxx,LetIn("c",Int(6),Plus(Var("a"),Plus(Var("b"),Var("c"))))))) & EInt 20\\
+\end{tabularx}
+\end{center}
+\chapter{Functional Subprograms}
+\label{sec:orgb9774d1}
+\begin{center}
+\begin{tabularx}{\textwidth}{Xl}
+INPUT & OUTPUT\\
+\hline
+Apply(Lambda("x", Plus(Var("x"), Int(1))), Int(99)) & EInt 100\\
+Apply(RecLambda("sum", "x", IfThenElse(Equals(Var("x"), Int(0)), Int(1), Multiply(Var("x"), Apply(Var("sum"), Plus(Var("x"), Int(-1)))))), Int(10)) & EInt 3628800\\
+\end{tabularx}
+\end{center}
+\chapter{Imperative State Change}
+\label{sec:org8733e80}
+\begin{center}
+\begin{tabularx}{\textwidth}{ll}
+INPUT & VARIABLE OUTPUT\\
+\hline
+Val("y") & EInt 10\\
+Assign("y", Plus(Val("y"), Val("y"))) & EInt 20\\
+\end{tabularx}
+\end{center}
+\chapter{Imperative Control Flow}
+\label{sec:org440da52}
+\begin{center}
+\begin{tabularx}{\textwidth}{Xl}
+INPUT & VARIABLE OUTPUT\\
+\hline
+Val("y"), Val("z") & EInt 10, EInt 0\\
+CIfThenElse(Not(Equals(Val("y"),Int(11))), Assign("y", Int(50))) & EInt 50, EInt 0\\
+While(Not(Equals(Val("y"), Int(100))), CSeq(Assign("y", Plus(Val("y"), Int(1))), Assign("z", Plus(Val("z"), Int(1)))) ) & EInt 50, EInt 50\\
+\end{tabularx}
+\end{center}
+\chapter{Imperative Blocks}
+\label{sec:org18eb8eb}
+\begin{center}
+\begin{tabularx}{\textwidth}{Xl}
+INPUT & OUTPUT\\
+\hline
+Val("y"), Val("z") & EInt 10, EInt 0\\
+Block(New("z", Int(1000)), Assign("y", Plus(Val "y", Val "z"))) & EInt 1010, EInt 0\\
+\end{tabularx}
+\end{center}
+\chapter{Imperative Subprograms}
+\label{sec:org95a324e}
+\begin{center}
+\begin{tabularx}{\textwidth}{Xl}
+INPUT & OUTPUT\\
+\hline
+Val("y"), Val("z") & EInt 10, EInt 0\\
+f = Proc(["z"], Block(DSkip, Assign("y", Val("z"))))) in Call (Val "f", [Val "z"]) & EInt 0, EInt 0\\
+\end{tabularx}
+\end{center}
+\chapter{Declarations}
+\label{sec:org93c14ff}
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+INPUT & OUTPUT\\
+\hline
+Val("y"), Val("z") & Failure 'y' not in environment, Failure 'z' not in environment\\
+DSeq(New("y", Int(10)), New("z", Int(0))) & EInt 10, EInt 0\\
+\end{tabularx}
+\end{center}
+\chapter{Reflection}
+\label{sec:org45d2f14}
+\begin{center}
+\begin{tabularx}{\textwidth}{Xl}
+INPUT & OUTPUT\\
+\hline
+Val("y") & EInt 10\\
+ereflect ("Plus(Plus(Int(1), Int(2)), Plus(Int(3), Int(4)))") & EInt 10\\
+Reflect(Str("Assign($\backslash$"y$\backslash$", Int(5))")) & EInt 5\\
+\end{tabularx}
+\end{center}
+\chapter{Taint Analysis}
+\label{sec:org06638c7}
+"dirty" is Dirty, "clean" is Clean
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+INPUT & VALUE\\
+\hline
+"dirty" & Dirty\\
+"clean" & Clean\\
+e & Equals(Plus(Val("x"),Val("y")),Int(6))\\
+assign1 & CSeq(Assign("x", Val("dirty")), Assign("y", Val("clean")))\\
+assign2 & CSeq(Assign("x", Val("clean")), Assign("y", Val("dirty")))\\
+d & DSeq(New("x", Val("dirty")), New("y", Val("clean")))\\
+c & CIfThenElse(e, assign1, assign2)\\
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+INPUT & OUTPUT\\
+\hline
+taint\(_{\text{analysis}}\) Prog(d,c) & [("clean", TLoc 15n); ("dirty", TLoc 27n); ("x", TLoc 76n); ("y", TLoc 41n)]\\
+ & [(15n, Clean); (27n, Dirty); (41n, Dirty); (76n, Dirty)]\\
+\end{tabularx}
+\end{center}
+\end{document}
