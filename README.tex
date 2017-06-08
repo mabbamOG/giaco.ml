@@ -1,6 +1,6 @@
-% Created 2017-06-09 Fri 01:51
+% Created 2017-06-09 Fri 01:56
 % Intended LaTeX compiler: pdflatex
-\documentclass[11pt]{report}
+\documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
@@ -16,12 +16,12 @@
 \usepackage{hyperref}
 \usepackage[margin=0.5in]{geometry}
 \usepackage{tabularx}
-\author{Mario A. Barbara \\ Andrea Cancellieri}
+\author{Mario A. Barbara VR387794 \\ Andrea Cancellieri VR387757}
 \date{}
 \title{giaco.ml\\\medskip
 \large an interpreted EDSL written in OCAML}
 \hypersetup{
- pdfauthor={Mario A. Barbara \\ Andrea Cancellieri},
+ pdfauthor={Mario A. Barbara VR387794 \\ Andrea Cancellieri VR387757},
  pdftitle={giaco.ml},
  pdfkeywords={},
  pdfsubject={},
@@ -30,8 +30,8 @@
 \begin{document}
 
 \maketitle
-\part{Introduction}
-\label{sec:org743990e}
+\section{Introduction}
+\label{sec:orga8b6030}
 giaco.ml is an imperative (but also functional) EDSL interpreter written in OCAML.
 
 The interpreter is capable of handling expressions, commands and declarations all within a program.
@@ -42,8 +42,8 @@ Static taint analysis can be performed, guards have been also
 added to the Reflect command as a form of protection, similar to perl.
 
 The main execution functions are: \texttt{interpret} (or \texttt{interpret'} which returns also the declarations' output), \texttt{reflect} and \texttt{taint\_analysis} which all operate on a \texttt{Prog(ds,cs)} construct.
-\part{Design Choices}
-\label{sec:org918b1d7}
+\section{Design Choices}
+\label{sec:org4d836b2}
 The interpreter works with 3 domains:
 \begin{description}
 \item[{generic}] this domain is shared amongst the syntax (external) and semantic (internal) domains
@@ -81,8 +81,8 @@ Some important choices:
 when the function is created.
 \item many utility functions have been created to ease debugging. most notable are \texttt{emptyenv} \texttt{emptystore} \texttt{tenv'} \texttt{tstore'} \texttt{tnew'} which simplify dealing with memory
 \end{itemize}
-\part{Usage}
-\label{sec:org9296b6f}
+\section{Usage}
+\label{sec:org680e19c}
 the interpreter can be loaded up with
 \begin{verbatim}
 > #use "giaco.ml";;
@@ -93,8 +93,8 @@ and subsequent testing may be performed:
 > let e = Plus(Int(3), Int(4)) in eval e emptyenv emptystore
 - : evalue = EInt 7
 \end{verbatim}
-\chapter{EXPRESSIONS}
-\label{sec:org9b9bccb}
+\subsection{EXPRESSIONS}
+\label{sec:orgffd94cf}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 EXAMPLE & DESCRIPTION\\
@@ -127,8 +127,8 @@ Trim(Str(\ldots{})) & trims whitespace from a string, like Python's \texttt{s.tr
 Replace(<string to be replace>,<replacer string>,<string>) & replaces a string with another string in a string, like Python's \texttt{s.replace()}\\
 \end{tabularx}
 \end{center}
-\chapter{COMMANDS}
-\label{sec:orgfff1c39}
+\subsection{COMMANDS}
+\label{sec:orge0ca8b6}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 EXAMPLE & DESCRIPTION\\
@@ -144,8 +144,8 @@ CSkip & like C's \texttt{void} and Python's \texttt{pass}, it does nothing\\
 Reflect(Str(\ldots{})) & reflection, see the reflection section\\
 \end{tabularx}
 \end{center}
-\chapter{DECLARATIONS}
-\label{sec:orgf74eecc}
+\subsection{DECLARATIONS}
+\label{sec:org1831296}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 EXAMPLE & DESCRIPTION\\
@@ -155,8 +155,8 @@ DSeq(d1, d2) & allows concatenation of declarations\\
 DSkip & does nothing\\
 \end{tabularx}
 \end{center}
-\part{String extension}
-\label{sec:org555c7cd}
+\section{String extension}
+\label{sec:org3b1137a}
 A few functions have been added to deal with the domain of strings.
 Functions such as these are taken from the Python langauge, which has a \textbf{very} extensive and popularstandard library.
 \begin{itemize}
@@ -172,8 +172,8 @@ Functions such as these are taken from the Python langauge, which has a \textbf{
 \end{itemize}
 
 Check the examples section for some examples
-\part{Reflection extension}
-\label{sec:orgcd5fafe}
+\section{Reflection extension}
+\label{sec:orgf2540dc}
 Reflection consists of allowing any string to be evaluated by the interpreter on the fly. In Python this is akeen to the \texttt{eval} function.
 This is also the most essential step to having a good interpreter: the interactive console for Python,
  one of the most popular interpreted languages, is often called \textbf{R.E.P.L.} (Read Eval Print Loop).
@@ -223,8 +223,8 @@ the flow of this technique:
             | 2 |             |--------+
             +---+---------------+
 \end{verbatim}
-\part{Taint-Analysis extension}
-\label{sec:org51dea90}
+\section{Taint-Analysis extension}
+\label{sec:orgad6a8c5}
 Static taint analysis consists of understanding how much damage some unsafe elements (of undefined value but defined nature) will yield.
 A classic example is an unsanitized input on a HTML form, which may result in an SQL Injection attack and damage your company's most valuable assets.
 
@@ -249,11 +249,11 @@ will result in a \texttt{Dirty} value. If the condition is \texttt{Clean}, then 
 assignments of shared key (amongst the 2 branches). If the condition is \texttt{Clean}, then the normal merge has already evaluated taint with \texttt{tor}.
 \end{itemize}
 \end{description}
-\part{Examples}
-\label{sec:org2172f9f}
+\section{Examples}
+\label{sec:orgac49757}
 check test.ml for some code examples.
-\chapter{Numbers}
-\label{sec:orgad91d21}
+\subsection{Numbers}
+\label{sec:org18d7305}
 \begin{center}
 \begin{tabularx}{\textwidth}{XX}
 INPUT & OUTPUT\\
@@ -265,8 +265,8 @@ Multiply(Float(2.5),Float(10.0)) & EFloat 25\\
 Greater(Int(3),Int(5)) & EBool false\\
 \end{tabularx}
 \end{center}
-\chapter{Booleans}
-\label{sec:orge0d74d6}
+\subsection{Booleans}
+\label{sec:org13cad23}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -277,8 +277,8 @@ And(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1))) & EBool false\\
 Or(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1))) & EBool true\\
 \end{tabularx}
 \end{center}
-\chapter{Strings}
-\label{sec:orgb07dc6b}
+\subsection{Strings}
+\label{sec:org552c3bf}
 \begin{center}
 \begin{tabularx}{\textwidth}{XX}
 INPUT & OUTPUT\\
@@ -295,8 +295,8 @@ Trim(Str("     italia      ")) & EStr "italia"\\
 Replace(Str("hello"),Str("goodbye"),Str("hello world!")) & EStr "goodbye world!"\\
 \end{tabularx}
 \end{center}
-\chapter{Functional Control Flow}
-\label{sec:org775055a}
+\subsection{Functional Control Flow}
+\label{sec:org26d1aa4}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -305,8 +305,8 @@ IfThenElse(Bool(true), Int(1337), Str("i am")) & EInt 1337\\
 IfThenElse(Not(Greater(Str("bob"),Str("mouse"))),Str("ciao mondo"),Int(5)) & EStr "ciao mondo"\\
 \end{tabularx}
 \end{center}
-\chapter{Functional Blocks}
-\label{sec:org62edac2}
+\subsection{Functional Blocks}
+\label{sec:org5f3fb1c}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -316,8 +316,8 @@ xxx = LetIn("a",Int(3),Multiply(Var("a"),Var("a"))) & EInt 9\\
 LetIn("a",Int(5),(LetIn("b",xxx,LetIn("c",Int(6),Plus(Var("a"),Plus(Var("b"),Var("c"))))))) & EInt 20\\
 \end{tabularx}
 \end{center}
-\chapter{Functional Subprograms}
-\label{sec:orgb9774d1}
+\subsection{Functional Subprograms}
+\label{sec:org65ab544}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -326,8 +326,8 @@ Apply(Lambda("x", Plus(Var("x"), Int(1))), Int(99)) & EInt 100\\
 Apply(RecLambda("sum", "x", IfThenElse(Equals(Var("x"), Int(0)), Int(1), Multiply(Var("x"), Apply(Var("sum"), Plus(Var("x"), Int(-1)))))), Int(10)) & EInt 3628800\\
 \end{tabularx}
 \end{center}
-\chapter{Imperative State Change}
-\label{sec:org8733e80}
+\subsection{Imperative State Change}
+\label{sec:orgbb453ba}
 \begin{center}
 \begin{tabularx}{\textwidth}{ll}
 INPUT & VARIABLE OUTPUT\\
@@ -336,8 +336,8 @@ Val("y") & EInt 10\\
 Assign("y", Plus(Val("y"), Val("y"))) & EInt 20\\
 \end{tabularx}
 \end{center}
-\chapter{Imperative Control Flow}
-\label{sec:org440da52}
+\subsection{Imperative Control Flow}
+\label{sec:orge8f3f63}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & VARIABLE OUTPUT\\
@@ -347,8 +347,8 @@ CIfThenElse(Not(Equals(Val("y"),Int(11))), Assign("y", Int(50))) & EInt 50, EInt
 While(Not(Equals(Val("y"), Int(100))), CSeq(Assign("y", Plus(Val("y"), Int(1))), Assign("z", Plus(Val("z"), Int(1)))) ) & EInt 50, EInt 50\\
 \end{tabularx}
 \end{center}
-\chapter{Imperative Blocks}
-\label{sec:org18eb8eb}
+\subsection{Imperative Blocks}
+\label{sec:org5e081b2}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -357,8 +357,8 @@ Val("y"), Val("z") & EInt 10, EInt 0\\
 Block(New("z", Int(1000)), Assign("y", Plus(Val "y", Val "z"))) & EInt 1010, EInt 0\\
 \end{tabularx}
 \end{center}
-\chapter{Imperative Subprograms}
-\label{sec:org95a324e}
+\subsection{Imperative Subprograms}
+\label{sec:org3de468c}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -367,8 +367,8 @@ Val("y"), Val("z") & EInt 10, EInt 0\\
 f = Proc(["z"], Block(DSkip, Assign("y", Val("z"))))) in Call (Val "f", [Val "z"]) & EInt 0, EInt 0\\
 \end{tabularx}
 \end{center}
-\chapter{Declarations}
-\label{sec:org93c14ff}
+\subsection{Declarations}
+\label{sec:org990e170}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 INPUT & OUTPUT\\
@@ -377,8 +377,8 @@ Val("y"), Val("z") & Failure 'y' not in environment, Failure 'z' not in environm
 DSeq(New("y", Int(10)), New("z", Int(0))) & EInt 10, EInt 0\\
 \end{tabularx}
 \end{center}
-\chapter{Reflection}
-\label{sec:org45d2f14}
+\subsection{Reflection}
+\label{sec:org3dccaca}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -388,8 +388,8 @@ ereflect ("Plus(Plus(Int(1), Int(2)), Plus(Int(3), Int(4)))") & EInt 10\\
 Reflect(Str("Assign($\backslash$"y$\backslash$", Int(5))")) & EInt 5\\
 \end{tabularx}
 \end{center}
-\chapter{Taint Analysis}
-\label{sec:org06638c7}
+\subsection{Taint Analysis}
+\label{sec:org88974e0}
 "dirty" is Dirty, "clean" is Clean
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}

@@ -1,9 +1,9 @@
 #+TITLE: giaco.ml
 #+SUBTITLE: an interpreted EDSL written in OCAML
-#+LATEX_CLASS: report
-#+AUTHOR: Mario A. Barbara
+#+LATEX_CLASS: article
+#+AUTHOR: Mario A. Barbara VR387794
 #+AUTHOR: @@latex:\\@@
-#+AUTHOR: Andrea Cancellieri
+#+AUTHOR: Andrea Cancellieri VR387757
 #+LANGUAGE: en
 #+OPTIONS: H:2 date:nil toc:nil
 #+LATEX_HEADER_EXTRA: \usepackage[margin=0.5in]{geometry}
