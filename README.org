@@ -1,5 +1,11 @@
-* NOME, TITOLO, SOTTOTITOLO, AUTORI
-* giaco.ml
+#+TITLE: giaco.ml
+#+TITLE:an interpreted EDSL written in ocaml, with reflection and taint analysis
+# #+TITLE:@@latex:\\@@
+#+AUTHOR: Mario A. Barbara
+#+AUTHOR: Andrea Cancellieri
+#+LANGUAGE: en
+#+OPTIONS: H:2 date:nil
+* Introduction
 giaco.ml is an imperative (but also functional) EDSL interpreter written in OCAML.
 
 The interpreter is capable of handling expressions, commands and declarations all within a program.
@@ -94,5 +100,51 @@ Functions such as these are taken from the Python langauge, which has a *very* e
 
 Check the examples section for some examples
 * Reflection extension
+Reflection consists in allowing any string to be evaluated by the interpreter on the fly. In Python this is akeen to the ~eval~ function.
+This is also the most essential step to having a good interpreter: the interactive console for Python,
+ one of the most popular interpreted languages, is often called *R.E.P.L.* (Read Eval Print Loop).
+
+The syntax of /giaco.ml/ has been extended with the ~Reflect~ command, which allows on the fly "evaluation" of commands.
+Unfortuately our language's command syntax is recursive, and furthermore the ~CIfThenElse~ command
+uses expressions as boolean conditions, which are also recursive.
+Therefore, a full blown parser needed to be built to give a string some depth (such as that of an AST).
+
+The reasoning is as follows:
+1. a function called =next_unit= is charged with grabbing the first word up until a =(= or =)= or =,= or multiple consecutive repetitions.
+2. to get the command to match against, =next_unit= is called on the string and the result is matched against some constants,
+taken from the language's syntax
+3. to get a command's arguments (which may be recursive and contain any amount of =( ) ,=, caution must be taken to
+correctly identify the argument boundaries, which are all separated by a =,= comma. 2 options are given:
+  - iterative :: by counting the number of open parentheses matched thus far, and decreasing each time a closed parentheses is found,
+                 it is possible to correctly identify the recursive structure of the syntax.
+  -  recursive (but faster) :: since we know the amount of parameter each command needs, it is
+       simply required to recursively reflect upon the arguments' string as many times as needed.
+       Of course, each time a command is consumed, it shall return the arguments' string, so as to allow its father to continue
+       looking for arguments.
+
+Our interpreter implements the recursive and faster technique. Here is a simple ditaa drawing to illustrate
+the flow of this technique:
+#+BEGIN_SRC ditaa
++------------------------------+
+|  A(B(C(1), C(2), C(3), ...)) |
+|                              |
++---------------+--------------+
+                |
+                v
+
++---+---------------------------+
+| A | B   C   1   C   2
++-------+-----------------------+
+    | B | C   1   C   2           <----+
+    +-------+-------------------+      |
+        | C | 1   C   2                |
+        +-------+---------------+      |
+            | 1 | C   2       |--------+
+        --------+---------------+      |
+        | C | 2                        |
+        +-------+---------------+      |
+            | 2 |             |--------+
+            +---+---------------+
+#+END_SRC
 * Taint-Analysis extension
 * Examples
