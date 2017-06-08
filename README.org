@@ -1,11 +1,12 @@
 #+TITLE: giaco.ml
-#+TITLE:an interpreted EDSL written in ocaml, with reflection and taint analysis
-# #+TITLE:@@latex:\\@@
+#+SUBTITLE: an interpreted EDSL written in OCAML
+#+LATEX_CLASS: memoir
 #+AUTHOR: Mario A. Barbara
+#+AUTHOR: @@latex:\\@@
 #+AUTHOR: Andrea Cancellieri
 #+LANGUAGE: en
-#+OPTIONS: H:2 date:nil
-* Introduction
+#+OPTIONS: H:2 date:nil toc:nil
+* TODO Introduction
 giaco.ml is an imperative (but also functional) EDSL interpreter written in OCAML.
 
 The interpreter is capable of handling expressions, commands and declarations all within a program.
@@ -100,7 +101,7 @@ Functions such as these are taken from the Python langauge, which has a *very* e
 
 Check the examples section for some examples
 * Reflection extension
-Reflection consists in allowing any string to be evaluated by the interpreter on the fly. In Python this is akeen to the ~eval~ function.
+Reflection consists of allowing any string to be evaluated by the interpreter on the fly. In Python this is akeen to the ~eval~ function.
 This is also the most essential step to having a good interpreter: the interactive console for Python,
  one of the most popular interpreted languages, is often called *R.E.P.L.* (Read Eval Print Loop).
 
@@ -124,6 +125,7 @@ correctly identify the argument boundaries, which are all separated by a =,= com
 
 Our interpreter implements the recursive and faster technique. Here is a simple ditaa drawing to illustrate
 the flow of this technique:
+# build with: asciiflow.com
 #+BEGIN_SRC ditaa
 +------------------------------+
 |  A(B(C(1), C(2), C(3), ...)) |
@@ -147,4 +149,22 @@ the flow of this technique:
             +---+---------------+
 #+END_SRC
 * Taint-Analysis extension
-* Examples
+Static taint analysis consists of understanding how much damage some unsafe elements (of undefined value but defined nature) will yield.
+A classic example is an unsanitized input on a HTML form, which may result in an SQL Injection attack and damage your company's most valuable assets.
+
+In our simple language, we have no operations that deal with the outside world (yet). We are thereforce forced to ask the user to label some variables
+in the environment and store as =Clean= or =Dirty=. Afterwards, we will analyze a program and check the ~Taint~ for every possible variable assignment.
+The semantic domains have been revisited, allowing memory (environment and store) to only contain tainted values (or store locations, in the environment's case).
+
+Our analysis is based on 2 simple concepts:
+- pure evaluation :: a ~tor~ function will take 2 taints and return =Dirty= if one of them is as well, otherwise =Clean=. This process can be lazy.
+     - All constants are =Clean=
+     - If a function is involved (such as a ~Lambda~) then the formal parameters are identified as =Clean= (as they cannot be expressions) and then the body is analyzed. If the body is clean, the function is clean
+     - A function application requires a ~tor~ amongst the analysis of the function itself and the passed parameter.
+     - If a condition is involved, then 2 outputs are possible. If the condition is =Dirty=, that means the attacker may choose either output and (regardless of the output's default taint)
+       will result in a =Dirty= value. If the condition is =Clean=, then either output may occur during execution, so they must be passed to ~tor~.
+- imperative state change :: all possible assignments in a command are gathered. Only the latest possible assignments matter (if i set =x= to =Dirty= and then =Clean= it is =Clean=).
+     - Afterwards, we check whether 2 branches are possible: if they are, a ~tor~ function must be applied to all assignments of same key, merging the 2 branches.
+     - If the branches are subject to a condition (such as in a ~CIfThenElse~) then a =Dirty= condition will mean an attacker may choose amongst any of the 2 branches, therefore dirtying all 
+       assignments of shared key (amongst the 2 branches). If the condition is =Clean=, then the normal merge has already evaluated taint with ~tor~.
+* TODO Examples
