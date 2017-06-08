@@ -1,6 +1,5 @@
 (** SEMANTIC **)
-type efun = (dvalue->store->evalue) (*  list of parameters? *)
-(*and cproc = ((com->env->store->store)->dvalue list->store->store) (* needed to parametrize cval *)*)
+type efun = (dvalue->store->evalue)
 and cproc = (dvalue list->store->store) (* needed to parametrize cval *)
 and evalue =
     | EInt of int

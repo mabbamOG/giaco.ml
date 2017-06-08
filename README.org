@@ -6,7 +6,7 @@
 #+AUTHOR: Andrea Cancellieri
 #+LANGUAGE: en
 #+OPTIONS: H:2 date:nil toc:nil
-* TODO Introduction
+*  Introduction
 giaco.ml is an imperative (but also functional) EDSL interpreter written in OCAML.
 
 The interpreter is capable of handling expressions, commands and declarations all within a program.
@@ -15,7 +15,9 @@ A program can be parsed into valid code from a file/string thanks to reflection.
 
 Static taint analysis can be performed, guards have been also
 added to the Reflect command as a form of protection, similar to perl.
-* TODO Design Choices
+
+The main execution functions are: ~interpret~ (or ~interpret'~ which returns also the declarations' output), ~reflect~ and ~taint_analysis~ which all operate on a ~Prog(ds,cs)~ construct.
+*  Design Choices
 The interpreter works with 3 domains:
 - generic :: this domain is shared amongst the syntax (external) and semantic (internal) domains
 - syntax :: this domain contains all the domains accessible to the user. it features 3 sub-domains
@@ -32,7 +34,17 @@ The interpreter works with 3 domains:
 The interpreter itself is implemented by 3 main functions:
 - eval :: this function basically maps expressions to evaluatable values
 - cval :: this function maps commands to a changed internal state (store)
-- dval :: this function maps declarations to a new internal state (environment + store) 
+- dval :: this function maps declarations to a new internal state (environment + store)
+
+Some important choices:
+- memory is viewed as a mapping. it is therefore impossible to modify in ocaml. changin the type signature of the interpreter would allow this
+- because memory is a mapping, new locations are simulated by randomly selecting a new location based on given store size
+- regular expressions are used in reflection, so the Str module must be available
+- fixed points are calculated through ocamls's ~function~ and ~let rec~ operations
+- to ease debugging, the interpreted is not compiled but interpreted in an ocaml shell with the ~#use "file.ml"~ construct
+- since the program is interpreted, ~let and~ between multiple files is not available, this has been fixed by using mutable state pointers to future functions. These pointers will be updated
+  when the function is created.
+- many utility functions have been created to ease debugging. most notable are ~emptyenv~ ~emptystore~ ~tenv'~ ~tstore'~ ~tnew'~ which simplify dealing with memory
 * Usage
 the interpreter can be loaded up with
 #+BEGIN_SRC ocaml
