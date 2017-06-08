@@ -141,8 +141,9 @@ and creflect (s:string) :com*string =
             in let c2,tl = creflect tl
             in CSeq(c1,c2),tl
     | "CSkip" -> CSkip,tl
-    | "Reflect" ->
-            Reflect(tl), ""
+    | "Reflect" -> 
+            let e,tl = ereflect tl
+            in Reflect(e), ""
     | err -> failwith ("creflect error: '"^err^"' is not a command")
 and dreflect (s:string) :dec*string =
     let hd,tl = next_unit s

@@ -40,7 +40,7 @@ and com =
     | CIfThenElse of expr*com*com
     | CSeq of com*com
     | CSkip
-    | Reflect of string
+    | Reflect of expr
 and dec =
     | New of ide*expr
     | DSeq of dec*dec

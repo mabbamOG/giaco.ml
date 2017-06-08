@@ -14,6 +14,6 @@ thoroughly.
 
 - NOTE :: some guards have been added to taint analysis to prove
   semi-automatic protection is possible, just like in perl. The restricted
-  commands are Reflect and Lambda (actually an expression)
+  commands are Reflect, for now.
 
 have fun :)

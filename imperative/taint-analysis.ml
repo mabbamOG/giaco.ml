@@ -1,6 +1,3 @@
-(* get base interpreter with reflection *)
-#use "interpreter.ml";;
-
 (* get tainting domains *)
 #use "tainting/domains.ml";;
 
