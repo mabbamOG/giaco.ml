@@ -130,8 +130,7 @@ Therefore, a full blown parser needed to be built to give a string some depth (s
 The reasoning is as follows:
 1. a function called =next_unit= is charged with grabbing the first word up until a =(= or =)= or =,= or multiple consecutive repetitions.
 2. to get the command to match against, =next_unit= is called on the string and the result is matched against some constants, taken from the language's syntax
-3. to get a command's arguments (which may be recursive and contain any amount of =( ) ,=, caution must be taken to
-correctly identify the argument boundaries, which are all separated by a =,= comma. 2 options are given:
+3. to get a command's arguments (which may be recursive and contain any amount of =( ) ,=, caution must be taken to correctly identify the argument boundaries, which are all separated by a =,= comma. 2 options are given:
   - iterative :: by counting the number of open parentheses matched thus far, and decreasing each time a closed parentheses is found,
                  it is possible to correctly identify the recursive structure of the syntax.
   -  recursive (but faster) :: since we know the amount of parameter each command needs, it is
