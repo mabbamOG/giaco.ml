@@ -57,7 +57,7 @@ and subsequent testing may be performed:
 | Proc(["x";"y";"z";...], Block(...))           | this is a procedure, check the commands section                     |
 | IfThenElse(Bool(true), .., ..)                | control flow element                                                |
 | Var("x")                                      | this is a way to retrieve an immutable variable's content           |
-| LetInt("x", e1, e2)                           | this is a way to nest functional blocks and scopes                  |
+| LetIn("x", e1, e2)                           | this is a way to nest functional blocks and scopes                  |
 | Val("x")                                      | this is a way to retrieve a mutable variable's content              |
 | Plus(e1, e2)                                  | plus function, applies to: Int, Str, Float                          |
 | Multiply(e1, e2)                              | multiply function, appliest to: Int, Str, Float                     |
@@ -65,7 +65,7 @@ and subsequent testing may be performed:
 | Equals(e1, e2)                                | like C's ~==~                                                       |
 | Greater(e1, e2)                               | like C's ~>~                                                        |
 | Not(e)                                        | like C's ~!~                                                        |
-| Or(e1, e2)                                    | like C's ~                                                          |
+| Or(e1, e2)                                    | like C's ~¦¦~                  |
 | And(e1, e2)                                   | like C's ~&&~                                                       |
 | Len( Str(...))                                | gets the length of a St                                             |
 | Sub(Str(...), i, j)                           | gets a substring. i and j of type Int.                              |
@@ -168,7 +168,7 @@ Our analysis is based on 2 simple concepts:
      - Afterwards, we check whether 2 branches are possible: if they are, a ~tor~ function must be applied to all assignments of same key, merging the 2 branches.
      - If the branches are subject to a condition (such as in a ~CIfThenElse~) then a =Dirty= condition will mean an attacker may choose amongst any of the 2 branches, therefore dirtying all 
        assignments of shared key (amongst the 2 branches). If the condition is =Clean=, then the normal merge has already evaluated taint with ~tor~.
-* TODO Examples
+* Examples
 check test.ml for some code examples.
 ** Numbers
 | INPUT                            | OUTPUT                |
@@ -241,4 +241,24 @@ check test.ml for some code examples.
 | Val("y"), Val("z")                        | Failure 'y' not in environment, Failure 'z' not in environment |
 | DSeq(New("y", Int(10)), New("z", Int(0))) | EInt 10, EInt 0                                                |
 ** Reflection
+| INPUT                                                         | OUTPUT  |
+|---------------------------------------------------------------+---------|
+| Val("y")                                                      | EInt 10 |
+| ereflect ("Plus(Plus(Int(1), Int(2)), Plus(Int(3), Int(4)))") | EInt 10 |
+| Reflect(Str("Assign(\"y\", Int(5))"))                         | EInt 5  |
 ** Taint Analysis
+   "dirty" is Dirty, "clean" is Clean
+   | INPUT   | VALUE                                                      |
+   |---------+------------------------------------------------------------|
+   | "dirty" | Dirty                                                      |
+   | "clean" | Clean                                                      |
+   | e       | Equals(Plus(Val("x"),Val("y")),Int(6))                     |
+   | assign1 | CSeq(Assign("x", Val("dirty")), Assign("y", Val("clean"))) |
+   | assign2 | CSeq(Assign("x", Val("clean")), Assign("y", Val("dirty"))) |
+   | d       | DSeq(New("x", Val("dirty")), New("y", Val("clean")))       |
+   | c       | CIfThenElse(e, assign1, assign2)                           |
+
+| INPUT                    | OUTPUT                                                                       |
+|--------------------------+------------------------------------------------------------------------------|
+| taint_analysis Prog(d,c) | [("clean", TLoc 15n); ("dirty", TLoc 27n); ("x", TLoc 76n); ("y", TLoc 41n)] |
+|                          | [(15n, Clean); (27n, Dirty); (41n, Dirty); (76n, Dirty)]                     |

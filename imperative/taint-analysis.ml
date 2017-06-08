@@ -19,13 +19,9 @@ let taint_analysis (src:prog) (p:tenv) (o:tstore) =
         in show_tenv p, show_tstore o
 
 (** TEST CASE **)
-let o = emptytstore
-let l = tnewloc' o
 let p = tenv' "xx" (Taint(Dirty)) emptytenv |> tenv' "yy" (Taint(Clean)) |> tenv' "clean" (TLoc(l))
-let o = tstore' l Clean o
-let l = tnewloc' o
-let o = tstore' l Dirty o
-let p = tenv' "dirty" (TLoc(l)) p
+let p,o = tnew' "clean" Clean p o
+let p,o = tnew' "dirty" Dirty p o
 
 let e = Equals(Plus(Val("x"),Val("y")),Int(6))
 let assign1 = CSeq(Assign("x", Val("dirty")), Assign("y", Val("clean")))

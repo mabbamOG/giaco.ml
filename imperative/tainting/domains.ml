@@ -34,5 +34,7 @@ let rec tnewloc (max_store_size:int) o :loc =
 let store_size = 100
 let tnewloc' = tnewloc store_size
 
+let tnew' x t p o = let l = tnewloc' o in (tenv' x (TLoc(l)) p), (tstore' l t o)
+
 let emptytenv:tenv = EnvMap.empty
 let emptytstore:tstore = StoreMap.empty

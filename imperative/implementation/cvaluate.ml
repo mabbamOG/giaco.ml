@@ -7,6 +7,7 @@ let rec cval (c:com) (p:env) (o:store) :store=
         | EBool(true) -> c1
         | EBool(false) -> c2
         | _ -> failwith "imperative if then else error"
+    and unescape_string s = Str.global_replace (Str.regexp "\\\"") "" s
     in
     match c with
     (* COM SIDE EFFECT *)
@@ -21,6 +22,6 @@ let rec cval (c:com) (p:env) (o:store) :store=
     | (While(b,c)) as w -> cval (CIfThen(b,CSeq(c,w))) p o
     | CSeq(c1,c2) -> cval c2 p (cval c1 p o)
     | CSkip -> o
-    | Reflect(e) -> (match e with Str(s) -> let c,tl = creflect s in if tl == "" then cval c p o else failwith "command incomplete"
+    | Reflect(e) -> (match e with Str(s) -> let c,tl = creflect (unescape_string s) in if tl = "" then cval c p o else failwith "command incomplete"
                     | _ -> failwith "can only call Reflect on string")
 ;;cval_ref := cval (* needed to reference cval from eval *)
