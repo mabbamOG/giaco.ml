@@ -1,11 +1,13 @@
 #+TITLE: giaco.ml
 #+SUBTITLE: an interpreted EDSL written in OCAML
-#+LATEX_CLASS: memoir
+#+LATEX_CLASS: report
 #+AUTHOR: Mario A. Barbara
 #+AUTHOR: @@latex:\\@@
 #+AUTHOR: Andrea Cancellieri
 #+LANGUAGE: en
 #+OPTIONS: H:2 date:nil toc:nil
+#+LATEX_HEADER_EXTRA: \usepackage[margin=0.5in]{geometry}
+#+LATEX_HEADER_EXTRA: \usepackage{tabularx}
 *  Introduction
 giaco.ml is an imperative (but also functional) EDSL interpreter written in OCAML.
 
@@ -57,6 +59,7 @@ and subsequent testing may be performed:
 - : evalue = EInt 7
 #+END_SRC
 ** EXPRESSIONS
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | EXAMPLE                                                    | DESCRIPTION                                                                    |
 |------------------------------------------------------------+--------------------------------------------------------------------------------|
 | Int(3)                                                     | basic integer                                                                  |
@@ -86,6 +89,7 @@ and subsequent testing may be performed:
 | Trim(Str(...))                                             | trims whitespace from a string, like Python's ~s.trim()~                       |
 | Replace(<string to be replace>,<replacer string>,<string>) | replaces a string with another string in a string, like Python's ~s.replace()~ |
 ** COMMANDS
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | EXAMPLE                | DESCRIPTION                                                                                          |
 |------------------------+------------------------------------------------------------------------------------------------------|
 | Assign("x", e)         | this changes the mutable value for the variable "x". e is an expression                              |
@@ -98,6 +102,7 @@ and subsequent testing may be performed:
 | CSkip                  | like C's ~void~ and Python's ~pass~, it does nothing                                                 |
 | Reflect(Str(...))      | reflection, see the reflection section                                                               |
 ** DECLARATIONS
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | EXAMPLE      | DESCRIPTION                                                      |
 |--------------+------------------------------------------------------------------|
 | New("x", e)  | this allocates a new mutable variable of value e (an expression) |
@@ -185,6 +190,7 @@ Our analysis is based on 2 simple concepts:
 * Examples
 check test.ml for some code examples.
 ** Numbers
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                            | OUTPUT                |
 |----------------------------------+-----------------------|
 | Int(5)                           | EInt 5       |
@@ -193,6 +199,7 @@ check test.ml for some code examples.
 | Multiply(Float(2.5),Float(10.0)) | EFloat 25    |
 | Greater(Int(3),Int(5))           | EBool false  |
 ** Booleans
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                                                            | OUTPUT               |
 |------------------------------------------------------------------+----------------------|
 | Bool(true)                                                       | EBool true  |
@@ -200,6 +207,7 @@ check test.ml for some code examples.
 | And(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1))) | EBool false |
 | Or(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1)))  | EBool true  |
 ** Strings
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                                                   | OUTPUT                                |
 |---------------------------------------------------------+---------------------------------------|
 | Str("hello world")                                      | EStr "hello world"                    |
@@ -213,48 +221,57 @@ check test.ml for some code examples.
 | Trim(Str("     italia      "))                          | EStr "italia"                         |
 | Replace(Str("hello"),Str("goodbye"),Str("hello world!")) | EStr "goodbye world!"                |
 ** Functional Control Flow
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                                                                      | OUTPUT            |
 |----------------------------------------------------------------------------+-------------------|
 | IfThenElse(Bool(true), Int(1337), Str("i am"))                             | EInt 1337         |
 | IfThenElse(Not(Greater(Str("bob"),Str("mouse"))),Str("ciao mondo"),Int(5)) | EStr "ciao mondo" |
 ** Functional Blocks
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                                                                                       | OUTPUT  |
 |---------------------------------------------------------------------------------------------+---------|
 | Var("x")                                                                                    | EInt 20 |
 | xxx = LetIn("a",Int(3),Multiply(Var("a"),Var("a")))                                         | EInt 9  |
 | LetIn("a",Int(5),(LetIn("b",xxx,LetIn("c",Int(6),Plus(Var("a"),Plus(Var("b"),Var("c"))))))) | EInt 20 |
 ** Functional Subprograms
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                                                                                                                                               | OUTPUT       |
 |-----------------------------------------------------------------------------------------------------------------------------------------------------+--------------|
 | Apply(Lambda("x", Plus(Var("x"), Int(1))), Int(99))                                                                                                 | EInt 100     |
 | Apply(RecLambda("sum", "x", IfThenElse(Equals(Var("x"), Int(0)), Int(1), Multiply(Var("x"), Apply(Var("sum"), Plus(Var("x"), Int(-1)))))), Int(10)) | EInt 3628800 |
 ** Imperative State Change
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                                 | VARIABLE OUTPUT |
 |---------------------------------------+-----------------|
 | Val("y")                              | EInt 10         |
 | Assign("y", Plus(Val("y"), Val("y"))) | EInt 20         |
 ** Imperative Control Flow
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                                                                                                                   | VARIABLE OUTPUT |
 |-------------------------------------------------------------------------------------------------------------------------+-----------------|
 | Val("y"), Val("z")                                                                                                      | EInt 10, EInt 0 |
 | CIfThenElse(Not(Equals(Val("y"),Int(11))), Assign("y", Int(50)))                                                        | EInt 50, EInt 0 |
 | While(Not(Equals(Val("y"), Int(100))), CSeq(Assign("y", Plus(Val("y"), Int(1))), Assign("z", Plus(Val("z"), Int(1)))) ) | EInt 50, EInt 50 |
 ** Imperative Blocks
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                                                           | OUTPUT          |
 |-----------------------------------------------------------------+-----------------|
 | Val("y"), Val("z")                                              | EInt 10, EInt 0 |
 | Block(New("z", Int(1000)), Assign("y", Plus(Val "y", Val "z"))) | EInt 1010, EInt 0 |
 ** Imperative Subprograms
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                                                                              | OUTPUT          |
 |------------------------------------------------------------------------------------+-----------------|
 | Val("y"), Val("z")                                                                 | EInt 10, EInt 0 |
 | f = Proc(["z"], Block(DSkip, Assign("y", Val("z"))))) in Call (Val "f", [Val "z"]) | EInt 0, EInt 0  |
 ** Declarations
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                                     | OUTPUT                                                         |
 |-------------------------------------------+----------------------------------------------------------------|
 | Val("y"), Val("z")                        | Failure 'y' not in environment, Failure 'z' not in environment |
 | DSeq(New("y", Int(10)), New("z", Int(0))) | EInt 10, EInt 0                                                |
 ** Reflection
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                                                         | OUTPUT  |
 |---------------------------------------------------------------+---------|
 | Val("y")                                                      | EInt 10 |
@@ -262,6 +279,7 @@ check test.ml for some code examples.
 | Reflect(Str("Assign(\"y\", Int(5))"))                         | EInt 5  |
 ** Taint Analysis
    "dirty" is Dirty, "clean" is Clean
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
    | INPUT   | VALUE                                                      |
    |---------+------------------------------------------------------------|
    | "dirty" | Dirty                                                      |
@@ -272,6 +290,7 @@ check test.ml for some code examples.
    | d       | DSeq(New("x", Val("dirty")), New("y", Val("clean")))       |
    | c       | CIfThenElse(e, assign1, assign2)                           |
 
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align lXl
 | INPUT                    | OUTPUT                                                                       |
 |--------------------------+------------------------------------------------------------------------------|
 | taint_analysis Prog(d,c) | [("clean", TLoc 15n); ("dirty", TLoc 27n); ("x", TLoc 76n); ("y", TLoc 41n)] |
