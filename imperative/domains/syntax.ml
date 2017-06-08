@@ -28,6 +28,10 @@ type expr =
     | And of expr*expr
     | Len of expr
     | Sub of expr*expr*expr
+    | Lower of expr
+    | Upper of expr
+    | Trim of expr
+    | Replace of expr*expr*expr
 and com =
     (* SIDE EFFECT *)
     | Assign of ide*expr

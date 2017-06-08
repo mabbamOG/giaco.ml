@@ -16,5 +16,5 @@ let rec etaint (e:expr) (p:tenv) (o:tstore) :taint =
     
     | Plus(e1,e2)|Multiply(e1,e2)|Greater(e1,e2)|Equals(e1,e2)|Or(e1,e2)|And(e1,e2) -> 
             lazy_tor e1 e2 p o
-    | Not(e)|Len(e) -> etaint e p o
-    | Sub(e1,e2,e3) -> lazy_tor3 e1 e2 e3 p o
+    | Not(e)|Len(e)|Lower(e)|Upper(e)|Trim(e) -> etaint e p o
+    | Sub(e1,e2,e3)|Replace(e1,e2,e3) -> lazy_tor3 e1 e2 e3 p o

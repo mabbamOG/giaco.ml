@@ -1,3 +1,4 @@
+* NOME, TITOLO, SOTTOTITOLO, AUTORI
 * giaco.ml
 giaco.ml is an imperative (but also functional) EDSL interpreter written in OCAML.
 
@@ -37,14 +38,16 @@ and subsequent testing may be performed:
 - : evalue = EInt 7
 #+END_SRC
 ** EXPRESSIONS
+| EXAMPLE                                       | DESCRIPTION                                                         |
+|-----------------------------------------------+---------------------------------------------------------------------|
 | Int(3)                                        | basic integer                                                       |
-| Str("hello world")                            | basic string                                                        |
+| Str("hello world")                            | basic ASCII string                                                  |
 | Bool(true)                                    | basic boolean                                                       |
 | Float(4.5)                                    | basic float                                                         |
 | Lambda("x", <exp containing x>)               | typical function                                                    |
 | RecLambda("f", "x", <exp containing f and x>) | typical recursive function                                          |
 | Rec("f", Lambda(....))                        | just another way to define recursive lambdas                        |
-| Proc(["x";"y";"z";...], Block(...))          | this is a procedure, check the commands section                     |
+| Proc(["x";"y";"z";...], Block(...))           | this is a procedure, check the commands section                     |
 | IfThenElse(Bool(true), .., ..)                | control flow element                                                |
 | Var("x")                                      | this is a way to retrieve an immutable variable's content           |
 | LetInt("x", e1, e2)                           | this is a way to nest functional blocks and scopes                  |
@@ -55,11 +58,13 @@ and subsequent testing may be performed:
 | Equals(e1, e2)                                | like C's ~==~                                                       |
 | Greater(e1, e2)                               | like C's ~>~                                                        |
 | Not(e)                                        | like C's ~!~                                                        |
-| Or(e1, e2)                                    | like C's ~||~                                                        |
+| Or(e1, e2)                                    | like C's ~                                                          |
 | And(e1, e2)                                   | like C's ~&&~                                                       |
 | Len( Str(...))                                | gets the length of a St                                             |
 | Sub(Str(...), i, j)                           | gets a substring. i and j of type Int.                              |
 ** COMMANDS
+| EXAMPLE                | DESCRIPTION                                                                                          |
+|------------------------+------------------------------------------------------------------------------------------------------|
 | Assign("x", e)         | this changes the mutable value for the variable "x". e is an expression                              |
 | Block(d, c)            | this is an imperative block with nested scope. d is a declaration, see its section for more detail   |
 | Call(p, [e1;e2;e3;..]) | this is an application of an imperative procedure. p is of type Proc (check the expressions section) |
@@ -70,10 +75,24 @@ and subsequent testing may be performed:
 | CSkip                  | like C's ~void~ and Python's ~pass~, it does nothing                                                 |
 | Reflect(Str(...))      | reflection, see the reflection section                                                               |
 ** DECLARATIONS
+| EXAMPLE      | DESCRIPTION                                                      |
+|--------------+------------------------------------------------------------------|
 | New("x", e)  | this allocates a new mutable variable of value e (an expression) |
 | DSeq(d1, d2) | allows concatenation of declarations                             |
 | DSkip        | does nothing                                                     |
 * String extension
+A few functions have been added to deal with the domain of strings.
+Functions such as these are taken from the Python langauge, which has a *very* extensive and popularstandard library.
+- concatenation (~Plus~ has been extended to allow this)
+- substring (~Sub~)
+- repetition (~Multiply~ has been extended to allow this
+- length (~Len~)
+- lowercase (~Lower~)
+- uppercase (~Upper~)
+- trim (~Trim~), trims all whitespace
+- Replace (~Replace~)
+
+Check the examples section for some examples
 * Reflection extension
 * Taint-Analysis extension
-* Tests
+* Examples

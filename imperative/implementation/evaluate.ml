@@ -1,67 +1,67 @@
 let cval_ref = ref (fun _->assert false)
 let rec eval (e:expr) (p:env) (o:store) :evalue = 
-    let 
-    plus v1 v2 = match v1,v2 with
+    let plus v1 v2 = match v1,v2 with
         | EInt(x),EInt(y) -> EInt(x+y) 
         | EFloat(x),EFloat(y) -> EFloat(x+.y) 
         | EStr(x),EStr(y) -> EStr(x^y)
         | _ -> failwith "plus error"
-    and
-    multiply v1 v2 = match v1,v2 with
+    and multiply v1 v2 = match v1,v2 with
         | EInt(x),EInt(y) -> EInt(x*y) 
         | EFloat(x),EFloat(y) -> EFloat(x*.y) 
         | EStr(s),EInt(n)|EInt(n),EStr(s) -> EStr(Array.fold_left (^) "" (Array.make n s))
         | _ -> failwith "multiply error"
-    and
-    apply v1 v2 o = match v1 with
+    and apply v1 v2 o = match v1 with
         | ELambda(f) -> f (e_to_d v2) o
         | _ -> failwith "apply error"
-    and
-    greater_than v1 v2 = match v1,v2 with
+    and greater_than v1 v2 = match v1,v2 with
         | EInt(x),EInt(y) -> EBool(x>y)
         | EFloat(x),EFloat(y) -> EBool(x>y)
         | EStr(x),EStr(y) -> EBool((String.length x)>(String.length y))
         | _ -> failwith "greater_than error"
-    and
-    equals v1 v2 = match v1,v2 with
+    and equals v1 v2 = match v1,v2 with
         | EInt(x),EInt(y) -> EBool(x=y)
         | EFloat(x),EFloat(y) -> EBool(x=y)
         | EStr(x),EStr(y) -> EBool(x=y)
         | EBool(x),EBool(y) -> EBool(x=y)
         | EUnbound,EUnbound -> EBool(false)
         | _ -> failwith "equals error"
-    and
-    _not = function
+    and _not = function
         | EBool(b) -> EBool(not b)
         | _ -> failwith "not error"
-    and
-    lazy_or (b:evalue) (e:expr) = match b with
+    and lazy_or (b:evalue) (e:expr) = match b with
         | EBool(true) -> Bool(true)
         | EBool(false) -> e
         | _ -> failwith "lazy or error"
-    and
-    lazy_and (b:evalue) (e:expr) = match b with
+    and lazy_and (b:evalue) (e:expr) = match b with
         | EBool(false) -> Bool(false)
         | EBool(true) -> e
         | _ -> failwith "lazy and error"
-    and
-    lazy_ifthenelse (b:evalue) (e1:expr) (e2:expr) =
+    and lazy_ifthenelse (b:evalue) (e1:expr) (e2:expr) =
         match b with
         | EBool(true) -> e1
         | EBool(false) -> e2
         | _ -> failwith "ifthenelse error"
-    and
-    _val (x:dvalue) (o':store) = match x with
+    and _val (x:dvalue) (o':store) = match x with
         | DLoc(l) -> m_to_e (o' l)
         | _ -> failwith "_val error"
-    and
-    len v = match v with
+    and len v = match v with
         | EStr(s) -> EInt(String.length s)
         | _ -> failwith "len error"
-    and
-    sub v1 v2 v3 = match v1,v2,v3 with
+    and sub v1 v2 v3 = match v1,v2,v3 with
         | EStr(s),EInt(i),EInt(j) -> if i<=j then EStr(String.sub s i (j-i+1)) else EStr("")
         | _ -> failwith "sub error"
+    and lower v = match v with
+        | EStr(s) -> EStr(String.lowercase_ascii s)
+        | _ -> failwith "lower error"
+    and upper v = match v with
+        | EStr(s) -> EStr(String.uppercase_ascii s)
+        | _ -> failwith "upper error"
+    and trim v = match v with
+        | EStr(s) -> EStr(String.trim s)
+        | _ -> failwith "trim error"
+    and replace v1 v2 v = match v1,v2,v with
+        | EStr(s1),EStr(s2),EStr(s) -> EStr(Str.global_replace (Str.regexp s1) s2 s)
+        | _ -> failwith "replace error"
     in
     match e with
     (* TYPES *)
@@ -103,3 +103,7 @@ let rec eval (e:expr) (p:env) (o:store) :evalue =
     | And(e1,e2) -> eval (lazy_and (eval e1 p o) e2) p o
     | Len(e) -> len (eval e p o)
     | Sub(e1,e2,e3) -> sub (eval e1 p o) (eval e2 p o) (eval e3 p o)
+    | Lower(e) -> lower (eval e p o)
+    | Upper(e) -> upper (eval e p o)
+    | Trim(e) -> trim (eval e p o)
+    | Replace(s1, s2, s) -> replace (eval s1 p o) (eval s2 p o) (eval s p o)

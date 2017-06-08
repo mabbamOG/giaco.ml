@@ -109,6 +109,20 @@ let rec ereflect (s:string) :expr*string =
             in let e2,tl = ereflect tl
             in let e3,tl = ereflect tl
             in Sub(e1,e2,e3),tl
+    | "Lower" ->
+            let e,tl = ereflect tl
+            in Lower(e),tl
+    | "Upper" ->
+            let e,tl = ereflect tl
+            in Upper(e),tl
+    | "Trim" ->
+            let e,tl = ereflect tl
+            in Trim(e),tl
+    | "Replace" ->
+            let e1,tl = ereflect tl
+            in let e2,tl = ereflect tl
+            in let e3,tl = ereflect tl
+            in Replace(e1,e2,e3),tl
     | err -> failwith ("ereflect error: '"^err^"' is not an expression")
 and creflect (s:string) :com*string = 
     let hd,tl = next_unit s
