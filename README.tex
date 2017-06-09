@@ -1,4 +1,4 @@
-% Created 2017-06-09 Fri 02:21
+% Created 2017-06-09 Fri 11:08
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -31,7 +31,7 @@
 
 \maketitle
 \section{Introduction}
-\label{sec:org46d9983}
+\label{sec:org7d30d3d}
 giaco.ml is an imperative (but also functional) EDSL interpreter written in OCAML.
 
 The interpreter is capable of handling expressions, commands and declarations all within a program.
@@ -43,7 +43,7 @@ added to the Reflect command as a form of protection, similar to perl.
 
 The main execution functions are: \texttt{interpret} (or \texttt{interpret'} which returns also the declarations' output), \texttt{reflect} and \texttt{taint\_analysis} which all operate on a \texttt{Prog(ds,cs)} construct.
 \section{Design Choices}
-\label{sec:org22af437}
+\label{sec:orgeddaf59}
 The interpreter works with 3 domains:
 \begin{description}
 \item[{generic}] this domain is shared amongst the syntax (external) and semantic (internal) domains
@@ -80,9 +80,11 @@ Some important choices:
 \item since the program is interpreted, \texttt{let and} between multiple files is not available, this has been fixed by using mutable state pointers to future functions. These pointers will be updated
 when the function is created.
 \item many utility functions have been created to ease debugging. most notable are \texttt{emptyenv} \texttt{emptystore} \texttt{tenv'} \texttt{tstore'} \texttt{tnew'} which simplify dealing with memory
+\item due to the non-recursive nature of \texttt{Procedure} and \texttt{Call}, they have been omitted from reflection and taint-analysis. The syntax restriction is due to the difficulty of implementing a parser 
+for the complete OCAML list syntax, and the static analysis of commands that cannot be recursively unpacked (one lies in the \emph{expressions}, the other in the \emph{commands})
 \end{itemize}
 \section{Usage}
-\label{sec:org3f8b8f8}
+\label{sec:org951d6a7}
 the interpreter can be loaded up with
 \begin{verbatim}
 > #use "giaco.ml";;
@@ -94,7 +96,7 @@ and subsequent testing may be performed:
 - : evalue = EInt 7
 \end{verbatim}
 \subsection{EXPRESSIONS}
-\label{sec:orgd3b7d3e}
+\label{sec:orgee80532}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 EXAMPLE & DESCRIPTION\\
@@ -128,7 +130,7 @@ Replace(<string to be replace>,<replacer string>,<string>) & replaces a string w
 \end{tabularx}
 \end{center}
 \subsection{COMMANDS}
-\label{sec:org67cff53}
+\label{sec:org9c58546}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 EXAMPLE & DESCRIPTION\\
@@ -145,7 +147,7 @@ Reflect(Str(\ldots{})) & reflection, see the reflection section\\
 \end{tabularx}
 \end{center}
 \subsection{DECLARATIONS}
-\label{sec:orgad37016}
+\label{sec:orgf25440b}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 EXAMPLE & DESCRIPTION\\
@@ -156,14 +158,14 @@ DSkip & does nothing\\
 \end{tabularx}
 \end{center}
 \section{String extension}
-\label{sec:org7dec9be}
+\label{sec:org9aa35be}
 A few functions have been added to deal with the domain of strings.
 Functions such as these are taken from the Python langauge, which has a \textbf{very} extensive and popularstandard library.
 \begin{itemize}
 \item length comparison (\texttt{Greater})
 \item concatenation (\texttt{Plus} has been extended to allow this)
 \item substring (\texttt{Sub})
-\item repetition (\texttt{Multiply} has been extended to allow this
+\item repetition (\texttt{Multiply} has been extended to allow this)
 \item length (\texttt{Len})
 \item lowercase (\texttt{Lower})
 \item uppercase (\texttt{Upper})
@@ -173,7 +175,7 @@ Functions such as these are taken from the Python langauge, which has a \textbf{
 
 Check the examples section for some examples
 \section{Reflection extension}
-\label{sec:org71ef23a}
+\label{sec:orgbb9d21b}
 Reflection consists of allowing any string to be evaluated by the interpreter on the fly. In Python this is akeen to the \texttt{eval} function.
 This is also the most essential step to having a good interpreter: the interactive console for Python,
  one of the most popular interpreted languages, is often called \textbf{R.E.P.L.} (Read Eval Print Loop).
@@ -224,7 +226,7 @@ the flow of this technique:
             +---+---------------+
 \end{verbatim}
 \section{Taint-Analysis extension}
-\label{sec:orgfb8a232}
+\label{sec:orgdca2d83}
 Static taint analysis consists of understanding how much damage some unsafe elements (of undefined value but defined nature) will yield.
 A classic example is an unsanitized input on a HTML form, which may result in an SQL Injection attack and damage your company's most valuable assets.
 
@@ -250,10 +252,10 @@ assignments of shared key (amongst the 2 branches). If the condition is \texttt{
 \end{itemize}
 \end{description}
 \section{Examples}
-\label{sec:org87bb38f}
+\label{sec:org348096f}
 check test.ml for some code examples.
 \subsection{Numbers}
-\label{sec:orga13a923}
+\label{sec:orgf663630}
 \begin{center}
 \begin{tabularx}{\textwidth}{XX}
 INPUT & OUTPUT\\
@@ -266,7 +268,7 @@ Greater(Int(3),Int(5)) & EBool false\\
 \end{tabularx}
 \end{center}
 \subsection{Booleans}
-\label{sec:orgea604d6}
+\label{sec:org5b5a15f}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -278,7 +280,7 @@ Or(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1))) & EBool true\\
 \end{tabularx}
 \end{center}
 \subsection{Strings}
-\label{sec:org7ced641}
+\label{sec:orge51926f}
 \begin{center}
 \begin{tabularx}{\textwidth}{XX}
 INPUT & OUTPUT\\
@@ -296,7 +298,7 @@ Replace(Str("hello"),Str("goodbye"),Str("hello world!")) & EStr "goodbye world!"
 \end{tabularx}
 \end{center}
 \subsection{Functional Control Flow}
-\label{sec:orge5aefea}
+\label{sec:orgda6f0a9}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -306,7 +308,7 @@ IfThenElse(Not(Greater(Str("bob"),Str("mouse"))),Str("ciao mondo"),Int(5)) & ESt
 \end{tabularx}
 \end{center}
 \subsection{Functional Blocks}
-\label{sec:orgd76ea06}
+\label{sec:org1cf263e}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -317,7 +319,7 @@ LetIn("a",Int(5),(LetIn("b",xxx,LetIn("c",Int(6),Plus(Var("a"),Plus(Var("b"),Var
 \end{tabularx}
 \end{center}
 \subsection{Functional Subprograms}
-\label{sec:orgcb932ab}
+\label{sec:orga9bab3d}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -327,7 +329,7 @@ Apply(RecLambda("fact", "x", IfThenElse(Equals(Var("x"), Int(0)), Int(1), Multip
 \end{tabularx}
 \end{center}
 \subsection{Imperative State Change}
-\label{sec:org3cd707a}
+\label{sec:orga9c1759}
 \begin{center}
 \begin{tabularx}{\textwidth}{ll}
 INPUT & VARIABLE OUTPUT\\
@@ -337,7 +339,7 @@ Assign("y", Plus(Val("y"), Val("y"))) & EInt 20\\
 \end{tabularx}
 \end{center}
 \subsection{Imperative Control Flow}
-\label{sec:orgfbe2322}
+\label{sec:orgd224101}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & VARIABLE OUTPUT\\
@@ -348,7 +350,7 @@ While(Not(Equals(Val("y"), Int(100))), CSeq(Assign("y", Plus(Val("y"), Int(1))),
 \end{tabularx}
 \end{center}
 \subsection{Imperative Blocks}
-\label{sec:org08f55ce}
+\label{sec:orgc9b49fa}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -358,7 +360,7 @@ Block(New("z", Int(1000)), Assign("y", Plus(Val "y", Val "z"))) & EInt 1010, EIn
 \end{tabularx}
 \end{center}
 \subsection{Imperative Subprograms}
-\label{sec:org1918663}
+\label{sec:org3c03518}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -368,7 +370,7 @@ Val("y"), Val("z") & EInt 10, EInt 0\\
 \end{tabularx}
 \end{center}
 \subsection{Declarations}
-\label{sec:orgea5f22d}
+\label{sec:orgcfd629a}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 INPUT & OUTPUT\\
@@ -378,7 +380,7 @@ DSeq(New("y", Int(10)), New("z", Int(0))) & EInt 10, EInt 0\\
 \end{tabularx}
 \end{center}
 \subsection{Reflection}
-\label{sec:orga11c59e}
+\label{sec:org8d0674f}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -389,7 +391,7 @@ Reflect(Str("Assign($\backslash$"y$\backslash$", Int(5))")) & EInt 5\\
 \end{tabularx}
 \end{center}
 \subsection{Taint Analysis}
-\label{sec:org55e8539}
+\label{sec:org6e0371d}
 "dirty" is Dirty, "clean" is Clean
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}

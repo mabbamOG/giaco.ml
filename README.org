@@ -47,6 +47,8 @@ Some important choices:
 - since the program is interpreted, ~let and~ between multiple files is not available, this has been fixed by using mutable state pointers to future functions. These pointers will be updated
   when the function is created.
 - many utility functions have been created to ease debugging. most notable are ~emptyenv~ ~emptystore~ ~tenv'~ ~tstore'~ ~tnew'~ which simplify dealing with memory
+- due to the non-recursive nature of ~Procedure~ and ~Call~, they have been omitted from reflection and taint-analysis. The syntax restriction is due to the difficulty of implementing a parser 
+  for the complete OCAML list syntax, and the static analysis of commands that cannot be recursively unpacked (one lies in the /expressions/, the other in the /commands/)
 * Usage
 the interpreter can be loaded up with
 #+BEGIN_SRC ocaml
@@ -114,7 +116,7 @@ Functions such as these are taken from the Python langauge, which has a *very* e
 - length comparison (~Greater~)
 - concatenation (~Plus~ has been extended to allow this)
 - substring (~Sub~)
-- repetition (~Multiply~ has been extended to allow this
+- repetition (~Multiply~ has been extended to allow this)
 - length (~Len~)
 - lowercase (~Lower~)
 - uppercase (~Upper~)
