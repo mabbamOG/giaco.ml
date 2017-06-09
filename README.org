@@ -191,8 +191,8 @@ Our analysis is based on 2 simple concepts:
 check test.ml for some code examples.
 ** Numbers
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align XX
-| INPUT                            | OUTPUT                |
-|----------------------------------+-----------------------|
+| INPUT                            | OUTPUT       |
+|----------------------------------+--------------|
 | Int(5)                           | EInt 5       |
 | Float(133.7)                     | EFloat 133.7 |
 | Plus(Int(1), Int(2))             | EInt 3       |
@@ -200,8 +200,8 @@ check test.ml for some code examples.
 | Greater(Int(3),Int(5))           | EBool false  |
 ** Booleans
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align Xl
-| INPUT                                                            | OUTPUT               |
-|------------------------------------------------------------------+----------------------|
+| INPUT                                                            | OUTPUT      |
+|------------------------------------------------------------------+-------------|
 | Bool(true)                                                       | EBool true  |
 | Not(Bool(true))                                                  | EBool false |
 | And(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1))) | EBool false |
@@ -231,14 +231,14 @@ check test.ml for some code examples.
 | INPUT                                                                                       | OUTPUT  |
 |---------------------------------------------------------------------------------------------+---------|
 | Var("x")                                                                                    | EInt 20 |
-| xxx = LetIn("a",Int(3),Multiply(Var("a"),Var("a")))                                         | EInt 9  |
+| ~xxx =~ LetIn("a",Int(3),Multiply(Var("a"),Var("a")))                                       | EInt 9  |
 | LetIn("a",Int(5),(LetIn("b",xxx,LetIn("c",Int(6),Plus(Var("a"),Plus(Var("b"),Var("c"))))))) | EInt 20 |
 ** Functional Subprograms
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align Xl
-| INPUT                                                                                                                                               | OUTPUT       |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------+--------------|
-| Apply(Lambda("x", Plus(Var("x"), Int(1))), Int(99))                                                                                                 | EInt 100     |
-| Apply(RecLambda("sum", "x", IfThenElse(Equals(Var("x"), Int(0)), Int(1), Multiply(Var("x"), Apply(Var("sum"), Plus(Var("x"), Int(-1)))))), Int(10)) | EInt 3628800 |
+| INPUT                                                                                                                                                 | OUTPUT       |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------+--------------|
+| Apply(Lambda("x", Plus(Var("x"), Int(1))), Int(99))                                                                                                   | EInt 100     |
+| Apply(RecLambda("fact", "x", IfThenElse(Equals(Var("x"), Int(0)), Int(1), Multiply(Var("x"), Apply(Var("fact"), Plus(Var("x"), Int(-1)))))), Int(10)) | EInt 3628800 |
 ** Imperative State Change
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align ll
 | INPUT                                 | VARIABLE OUTPUT |
@@ -247,23 +247,23 @@ check test.ml for some code examples.
 | Assign("y", Plus(Val("y"), Val("y"))) | EInt 20         |
 ** Imperative Control Flow
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align Xl
-| INPUT                                                                                                                   | VARIABLE OUTPUT |
-|-------------------------------------------------------------------------------------------------------------------------+-----------------|
-| Val("y"), Val("z")                                                                                                      | EInt 10, EInt 0 |
-| CIfThenElse(Not(Equals(Val("y"),Int(11))), Assign("y", Int(50)))                                                        | EInt 50, EInt 0 |
+| INPUT                                                                                                                   | VARIABLE OUTPUT  |
+|-------------------------------------------------------------------------------------------------------------------------+------------------|
+| Val("y"), Val("z")                                                                                                      | EInt 10, EInt 0  |
+| CIfThenElse(Not(Equals(Val("y"),Int(11))), Assign("y", Int(50)))                                                        | EInt 50, EInt 0  |
 | While(Not(Equals(Val("y"), Int(100))), CSeq(Assign("y", Plus(Val("y"), Int(1))), Assign("z", Plus(Val("z"), Int(1)))) ) | EInt 50, EInt 50 |
 ** Imperative Blocks
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align Xl
-| INPUT                                                           | OUTPUT          |
-|-----------------------------------------------------------------+-----------------|
-| Val("y"), Val("z")                                              | EInt 10, EInt 0 |
+| INPUT                                                           | OUTPUT            |
+|-----------------------------------------------------------------+-------------------|
+| Val("y"), Val("z")                                              | EInt 10, EInt 0   |
 | Block(New("z", Int(1000)), Assign("y", Plus(Val "y", Val "z"))) | EInt 1010, EInt 0 |
 ** Imperative Subprograms
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align Xl
-| INPUT                                                                              | OUTPUT          |
-|------------------------------------------------------------------------------------+-----------------|
-| Val("y"), Val("z")                                                                 | EInt 10, EInt 0 |
-| f = Proc(["z"], Block(DSkip, Assign("y", Val("z"))))) in Call (Val "f", [Val "z"]) | EInt 0, EInt 0  |
+| INPUT                                                                                | OUTPUT          |
+|--------------------------------------------------------------------------------------+-----------------|
+| Val("y"), Val("z")                                                                   | EInt 10, EInt 0 |
+| ~f =~ Proc(["z"], Block(DSkip, Assign("y", Val("z"))))) in Call (Val "f", [Val "z"]) | EInt 0, EInt 0  |
 ** Declarations
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align lX
 | INPUT                                     | OUTPUT                                                         |
@@ -272,26 +272,26 @@ check test.ml for some code examples.
 | DSeq(New("y", Int(10)), New("z", Int(0))) | EInt 10, EInt 0                                                |
 ** Reflection
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align Xl
-| INPUT                                                         | OUTPUT  |
-|---------------------------------------------------------------+---------|
-| Val("y")                                                      | EInt 10 |
-| ereflect ("Plus(Plus(Int(1), Int(2)), Plus(Int(3), Int(4)))") | EInt 10 |
-| Reflect(Str("Assign(\"y\", Int(5))"))                         | EInt 5  |
+| INPUT                                                           | OUTPUT  |
+|-----------------------------------------------------------------+---------|
+| Val("y")                                                        | EInt 10 |
+| ~ereflect~ ("Plus(Plus(Int(1), Int(2)), Plus(Int(3), Int(4)))") | EInt 10 |
+| Reflect(Str("Assign(\"y\", Int(5))"))                           | EInt 5  |
 ** Taint Analysis
    "dirty" is Dirty, "clean" is Clean
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align lX
-   | INPUT   | VALUE                                                      |
-   |---------+------------------------------------------------------------|
-   | "dirty" | Dirty                                                      |
-   | "clean" | Clean                                                      |
-   | e       | Equals(Plus(Val("x"),Val("y")),Int(6))                     |
-   | assign1 | CSeq(Assign("x", Val("dirty")), Assign("y", Val("clean"))) |
-   | assign2 | CSeq(Assign("x", Val("clean")), Assign("y", Val("dirty"))) |
-   | d       | DSeq(New("x", Val("dirty")), New("y", Val("clean")))       |
-   | c       | CIfThenElse(e, assign1, assign2)                           |
+   | INPUT     | VALUE                                                      |
+   |-----------+------------------------------------------------------------|
+   | ~"dirty"~ | Dirty                                                      |
+   | ~"clean"~ | Clean                                                      |
+   | ~e~       | Equals(Plus(Val("x"),Val("y")),Int(6))                     |
+   | ~assign1~ | CSeq(Assign("x", Val("dirty")), Assign("y", Val("clean"))) |
+   | ~assign2~ | CSeq(Assign("x", Val("clean")), Assign("y", Val("dirty"))) |
+   | ~d~       | DSeq(New("x", Val("dirty")), New("y", Val("clean")))       |
+   | ~c~       | CIfThenElse(e, assign1, assign2)                           |
 
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align lX
-| INPUT                    | OUTPUT                                                                       |
-|--------------------------+------------------------------------------------------------------------------|
-| taint_analysis Prog(d,c) | [("clean", TLoc 15n); ("dirty", TLoc 27n); ("x", TLoc 76n); ("y", TLoc 41n)] |
-|                          | [(15n, Clean); (27n, Dirty); (41n, Dirty); (76n, Dirty)]                     |
+| INPUT                      | OUTPUT                                                                       |
+|----------------------------+------------------------------------------------------------------------------|
+| ~taint_analysis~ Prog(d,c) | [("clean", TLoc 15n); ("dirty", TLoc 27n); ("x", TLoc 76n); ("y", TLoc 41n)] |
+|                            | [(15n, Clean); (27n, Dirty); (41n, Dirty); (76n, Dirty)]                     |
