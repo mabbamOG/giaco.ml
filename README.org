@@ -135,9 +135,8 @@ The most useful interpreter functions are:
 | DSeq(d1, d2) | allows concatenation of declarations                             |
 | DSkip        | does nothing                                                     |
 ** PROGRAM
+NOTE :: to use the functional language only, please use expressions along with ~eval~. Programs are only imperative.
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align ll
-  - NOTE :: to use the functional language only, please use expressions along with ~eval~. Programs are only imperative.
-
 | EXAMPLE                        | DESCRIPTION                            |
 |--------------------------------+----------------------------------------|
 | Prog(<declaration>, <command>) | handy syntax that puts it all together |
