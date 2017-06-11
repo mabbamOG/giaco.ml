@@ -46,7 +46,7 @@ Some important choices:
 - to ease debugging, the interpreted is not compiled but interpreted in an ocaml shell with the ~#use "file.ml"~ construct
 - since the program is interpreted, ~let and~ between multiple files is not available, this has been fixed by using mutable state pointers to future functions. These pointers will be updated
   when the function is created.
-- many utility functions have been created to ease debugging. most notable are ~emptyenv~ ~emptystore~ ~tenv'~ ~tstore'~ ~tnew'~ which simplify dealing with memory
+- many utility functions have been created to ease debugging. most notable are ~emptyenv~ ~emptystore~ ~env'~ ~store'~ ~new'~ which simplify dealing with memory
 - due to the non-recursive nature of ~Procedure~ and ~Call~, they have been omitted from reflection and taint-analysis. The syntax restriction is due to the difficulty of implementing a parser 
   for the complete OCAML list syntax, and the static analysis of commands that cannot be recursively unpacked (one lies in the /expressions/, the other in the /commands/)
 * Usage
@@ -58,7 +58,7 @@ the interpreter can be loaded up with
 and subsequent testing may be performed:
 #+BEGIN_SRC ocaml
 >> (* have a functional sample: *)
->> Plus(Int(3), Int(4)) in eval e emptyenv emptystore;;
+>> let e = Plus(Int(3), Int(4)) in eval e emptyenv emptystore;;
 - : evalue = EInt 7
 
 >> (* now let's try a complete program *)

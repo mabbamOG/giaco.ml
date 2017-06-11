@@ -1,4 +1,4 @@
-% Created 2017-06-11 Sun 15:51
+% Created 2017-06-11 Sun 16:00
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -31,7 +31,7 @@
 
 \maketitle
 \section{Introduction}
-\label{sec:org7ac1104}
+\label{sec:org965e98b}
 giaco.ml is an imperative (but also functional) EDSL interpreter written in OCAML.
 
 The interpreter is capable of handling expressions, commands and declarations all within a program.
@@ -43,7 +43,7 @@ added to the Reflect command as a form of protection, similar to perl.
 
 The main execution functions are: \texttt{interpret} (or \texttt{interpret'} which returns also the declarations' output), \texttt{reflect} and \texttt{taint\_analysis} which all operate on a \texttt{Prog(ds,cs)} construct.
 \section{Design Choices}
-\label{sec:org0520f9a}
+\label{sec:orgc0160ce}
 The interpreter works with 3 domains:
 \begin{description}
 \item[{generic}] this domain is shared amongst the syntax (external) and semantic (internal) domains
@@ -79,12 +79,12 @@ Some important choices:
 \item to ease debugging, the interpreted is not compiled but interpreted in an ocaml shell with the \texttt{\#use "file.ml"} construct
 \item since the program is interpreted, \texttt{let and} between multiple files is not available, this has been fixed by using mutable state pointers to future functions. These pointers will be updated
 when the function is created.
-\item many utility functions have been created to ease debugging. most notable are \texttt{emptyenv} \texttt{emptystore} \texttt{tenv'} \texttt{tstore'} \texttt{tnew'} which simplify dealing with memory
+\item many utility functions have been created to ease debugging. most notable are \texttt{emptyenv} \texttt{emptystore} \texttt{env'} \texttt{store'} \texttt{new'} which simplify dealing with memory
 \item due to the non-recursive nature of \texttt{Procedure} and \texttt{Call}, they have been omitted from reflection and taint-analysis. The syntax restriction is due to the difficulty of implementing a parser 
 for the complete OCAML list syntax, and the static analysis of commands that cannot be recursively unpacked (one lies in the \emph{expressions}, the other in the \emph{commands})
 \end{itemize}
 \section{Usage}
-\label{sec:org1649f85}
+\label{sec:orgdbdcb5f}
 the interpreter can be loaded up with
 \begin{verbatim}
 >> #use "giaco.ml";;
@@ -93,7 +93,7 @@ the interpreter can be loaded up with
 and subsequent testing may be performed:
 \begin{verbatim}
 >> (* have a functional sample: *)
->> Plus(Int(3), Int(4)) in eval e emptyenv emptystore;;
+>> let e = Plus(Int(3), Int(4)) in eval e emptyenv emptystore;;
 - : evalue = EInt 7
 
 >> (* now let's try a complete program *)
@@ -122,7 +122,7 @@ analysis of the output
 \end{description}
 
 \subsection{EXPRESSIONS}
-\label{sec:org95cd5fb}
+\label{sec:org85b77ba}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 EXAMPLE & DESCRIPTION\\
@@ -156,7 +156,7 @@ Replace(<string to be replace>,<replacer string>,<string>) & replaces a string w
 \end{tabularx}
 \end{center}
 \subsection{COMMANDS}
-\label{sec:org71dfa91}
+\label{sec:org9c3e8af}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 EXAMPLE & DESCRIPTION\\
@@ -173,7 +173,7 @@ Reflect(Str(\ldots{})) & reflection, see the reflection section\\
 \end{tabularx}
 \end{center}
 \subsection{DECLARATIONS}
-\label{sec:orge6c00da}
+\label{sec:org677b58f}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 EXAMPLE & DESCRIPTION\\
@@ -184,7 +184,7 @@ DSkip & does nothing\\
 \end{tabularx}
 \end{center}
 \subsection{PROGRAM}
-\label{sec:orgb88bd40}
+\label{sec:orgf8fb6f2}
 NOTE :: to use the functional language only, please use expressions along with \texttt{eval}. Programs are only imperative.
 \begin{center}
 \begin{tabularx}{\textwidth}{ll}
@@ -194,7 +194,7 @@ Prog(<declaration>, <command>) & handy syntax that puts it all together\\
 \end{tabularx}
 \end{center}
 \section{String extension}
-\label{sec:org82ae574}
+\label{sec:org45020ea}
 A few functions have been added to deal with the domain of strings.
 Functions such as these are taken from the Python langauge, which has a \textbf{very} extensive and popularstandard library.
 \begin{itemize}
@@ -211,7 +211,7 @@ Functions such as these are taken from the Python langauge, which has a \textbf{
 
 Check the examples section for some examples
 \section{Reflection extension}
-\label{sec:org3758799}
+\label{sec:org82a2a16}
 Reflection consists of allowing any string to be evaluated by the interpreter on the fly. In Python this is akeen to the \texttt{eval} function.
 This is also the most essential step to having a good interpreter: the interactive console for Python,
  one of the most popular interpreted languages, is often called \textbf{R.E.P.L.} (Read Eval Print Loop).
@@ -262,7 +262,7 @@ the flow of this technique:
             +---+---------------+
 \end{verbatim}
 \section{Taint-Analysis extension}
-\label{sec:org21c08c9}
+\label{sec:org900e0d5}
 Static taint analysis consists of understanding how much damage some unsafe elements (of undefined value but defined nature) will yield.
 A classic example is an unsanitized input on a HTML form, which may result in an SQL Injection attack and damage your company's most valuable assets.
 
@@ -288,10 +288,10 @@ assignments of shared key (amongst the 2 branches). If the condition is \texttt{
 \end{itemize}
 \end{description}
 \section{Examples}
-\label{sec:orgfbb3e1d}
+\label{sec:orgbf15a20}
 check test.ml for some code examples.
 \subsection{Numbers}
-\label{sec:org68b004e}
+\label{sec:orgb785289}
 \begin{center}
 \begin{tabularx}{\textwidth}{XX}
 INPUT & OUTPUT\\
@@ -304,7 +304,7 @@ Greater(Int(3),Int(5)) & EBool false\\
 \end{tabularx}
 \end{center}
 \subsection{Booleans}
-\label{sec:org86790cb}
+\label{sec:org87187cd}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -316,7 +316,7 @@ Or(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1))) & EBool true\\
 \end{tabularx}
 \end{center}
 \subsection{Strings}
-\label{sec:org2459521}
+\label{sec:orgd0e160b}
 \begin{center}
 \begin{tabularx}{\textwidth}{XX}
 INPUT & OUTPUT\\
@@ -334,7 +334,7 @@ Replace(Str("hello"),Str("goodbye"),Str("hello world!")) & EStr "goodbye world!"
 \end{tabularx}
 \end{center}
 \subsection{Functional Control Flow}
-\label{sec:org37fbfba}
+\label{sec:org6ac5d62}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -344,7 +344,7 @@ IfThenElse(Not(Greater(Str("bob"),Str("mouse"))),Str("ciao mondo"),Int(5)) & ESt
 \end{tabularx}
 \end{center}
 \subsection{Functional Blocks}
-\label{sec:orge87e4ea}
+\label{sec:org35c5a0f}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -355,7 +355,7 @@ LetIn("a",Int(5),(LetIn("b",xxx,LetIn("c",Int(6),Plus(Var("a"),Plus(Var("b"),Var
 \end{tabularx}
 \end{center}
 \subsection{Functional Subprograms}
-\label{sec:org9ecbf6c}
+\label{sec:org08c40aa}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -365,7 +365,7 @@ Apply(RecLambda("fact", "x", IfThenElse(Equals(Var("x"), Int(0)), Int(1), Multip
 \end{tabularx}
 \end{center}
 \subsection{Imperative State Change}
-\label{sec:org3208886}
+\label{sec:org962f0cb}
 \begin{center}
 \begin{tabularx}{\textwidth}{ll}
 INPUT & VARIABLE OUTPUT\\
@@ -375,7 +375,7 @@ Assign("y", Plus(Val("y"), Val("y"))) & EInt 20\\
 \end{tabularx}
 \end{center}
 \subsection{Imperative Control Flow}
-\label{sec:org78144ba}
+\label{sec:org14863b3}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & VARIABLE OUTPUT\\
@@ -386,7 +386,7 @@ While(Not(Equals(Val("y"), Int(100))), CSeq(Assign("y", Plus(Val("y"), Int(1))),
 \end{tabularx}
 \end{center}
 \subsection{Imperative Blocks}
-\label{sec:org4ae9700}
+\label{sec:orgf965891}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -396,7 +396,7 @@ Block(New("z", Int(1000)), Assign("y", Plus(Val "y", Val "z"))) & EInt 1010, EIn
 \end{tabularx}
 \end{center}
 \subsection{Imperative Subprograms}
-\label{sec:orgce1f0f2}
+\label{sec:org4a5830d}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -406,7 +406,7 @@ Val("y"), Val("z") & EInt 10, EInt 0\\
 \end{tabularx}
 \end{center}
 \subsection{Declarations}
-\label{sec:org9bdab39}
+\label{sec:org5aa12a1}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 INPUT & OUTPUT\\
@@ -416,7 +416,7 @@ DSeq(New("y", Int(10)), New("z", Int(0))) & EInt 10, EInt 0\\
 \end{tabularx}
 \end{center}
 \subsection{Reflection}
-\label{sec:orge64739d}
+\label{sec:org078555a}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -427,7 +427,7 @@ Reflect(Str("Assign($\backslash$"y$\backslash$", Int(5))")) & EInt 5\\
 \end{tabularx}
 \end{center}
 \subsection{Taint Analysis}
-\label{sec:orgf91b238}
+\label{sec:org775053a}
 "dirty" is Dirty, "clean" is Clean
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
@@ -452,7 +452,7 @@ INPUT & OUTPUT\\
 \end{tabularx}
 \end{center}
 \section{Noted Bugs:}
-\label{sec:org8977b21}
+\label{sec:orgb88727e}
 \begin{itemize}
 \item reflection on the \texttt{Reflect} command is supposedly allowed (since it is implemented recursively) but OCAML's escape of strings within strings is weird and needs some fixing\ldots{}
 \end{itemize}
