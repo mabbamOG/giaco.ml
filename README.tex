@@ -1,4 +1,4 @@
-% Created 2017-06-09 Fri 11:08
+% Created 2017-06-11 Sun 15:43
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -16,12 +16,12 @@
 \usepackage{hyperref}
 \usepackage[margin=0.5in]{geometry}
 \usepackage{tabularx}
-\author{Mario A. Barbara VR387794 \\ Andrea Cancellieri VR387757}
+\author{Mario A. Barbara \\ Andrea Cancellieri}
 \date{}
 \title{giaco.ml\\\medskip
 \large an interpreted EDSL written in OCAML}
 \hypersetup{
- pdfauthor={Mario A. Barbara VR387794 \\ Andrea Cancellieri VR387757},
+ pdfauthor={Mario A. Barbara \\ Andrea Cancellieri},
  pdftitle={giaco.ml},
  pdfkeywords={},
  pdfsubject={},
@@ -31,7 +31,7 @@
 
 \maketitle
 \section{Introduction}
-\label{sec:org7d30d3d}
+\label{sec:org86af44c}
 giaco.ml is an imperative (but also functional) EDSL interpreter written in OCAML.
 
 The interpreter is capable of handling expressions, commands and declarations all within a program.
@@ -43,7 +43,7 @@ added to the Reflect command as a form of protection, similar to perl.
 
 The main execution functions are: \texttt{interpret} (or \texttt{interpret'} which returns also the declarations' output), \texttt{reflect} and \texttt{taint\_analysis} which all operate on a \texttt{Prog(ds,cs)} construct.
 \section{Design Choices}
-\label{sec:orgeddaf59}
+\label{sec:orgf6e2393}
 The interpreter works with 3 domains:
 \begin{description}
 \item[{generic}] this domain is shared amongst the syntax (external) and semantic (internal) domains
@@ -84,19 +84,45 @@ when the function is created.
 for the complete OCAML list syntax, and the static analysis of commands that cannot be recursively unpacked (one lies in the \emph{expressions}, the other in the \emph{commands})
 \end{itemize}
 \section{Usage}
-\label{sec:org951d6a7}
+\label{sec:orgb7e2378}
 the interpreter can be loaded up with
 \begin{verbatim}
-> #use "giaco.ml";;
+>> #use "giaco.ml";;
 \end{verbatim}
 
 and subsequent testing may be performed:
 \begin{verbatim}
-> let e = Plus(Int(3), Int(4)) in eval e emptyenv emptystore
+>> (* have a functional sample: *)
+>> Plus(Int(3), Int(4)) in eval e emptyenv emptystore;;
 - : evalue = EInt 7
+
+>> (* now let's try a complete program *)
+>> let e = Lambda("x",Multiply(Val("global"), Var("x"))) in
+>> let d = New("global", Str("yes")) in
+>> let c = Assign("global", Apply(e, Int(5))) in
+>> let program = Prog(d,c) in
+>> let result_environment, result_store = interpret' program emptyenv emptystore in
+>> eval (Val("global")) result_environment result_store;;
+- : evalue = EStr "yesyesyesyesyes"
 \end{verbatim}
+
+The most useful interpreter functions are:
+\begin{description}
+\item[{\texttt{eval: expr -> env -> store -> evalue}}] evaluates expressions
+\item[{\texttt{cval: com -> env -> store -> store}}] converts commands into a modified mutable memory
+\item[{\texttt{dval: dec -> env -> store -> env*store}}] allows extending mutable memory
+\item[{\texttt{interpret: prog -> env -> store -> store} }] combines all of the above. cannot return expression values like eval, though, as we do not have print
+functionality
+\item[{\texttt{interpret': prog -> env -> store -> env*store} }] just like \texttt{interpret} but return the last evaluated environment as well, which allows for further 
+analysis of the output
+\item[{\texttt{emptyenv} and \texttt{emptystore}}] already initialized empty environment and store
+\item[{\texttt{env'} and \texttt{store'}}] allow extending environments and stores outside of syntax. \texttt{new'} combines this and allows doing something like the \texttt{New(...)} command outside of syntax.
+\item[{\texttt{ereflect} and \texttt{creflect} and \texttt{dreflect} and \texttt{reflect}}] reflection of expressions, commands, declarations, full blown programs.
+\item[{\texttt{etaint} and \texttt{ctaint} and \texttt{dtaint} and \texttt{taint\_anlaysis}}] static taint analysis of expressions, commands, declarations and full blown programs.
+\end{description}
+
 \subsection{EXPRESSIONS}
-\label{sec:orgee80532}
+\label{sec:orgb394e41}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 EXAMPLE & DESCRIPTION\\
@@ -130,7 +156,7 @@ Replace(<string to be replace>,<replacer string>,<string>) & replaces a string w
 \end{tabularx}
 \end{center}
 \subsection{COMMANDS}
-\label{sec:org9c58546}
+\label{sec:orgb7e4cbd}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 EXAMPLE & DESCRIPTION\\
@@ -147,7 +173,7 @@ Reflect(Str(\ldots{})) & reflection, see the reflection section\\
 \end{tabularx}
 \end{center}
 \subsection{DECLARATIONS}
-\label{sec:orgf25440b}
+\label{sec:orgd814160}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 EXAMPLE & DESCRIPTION\\
@@ -157,8 +183,21 @@ DSeq(d1, d2) & allows concatenation of declarations\\
 DSkip & does nothing\\
 \end{tabularx}
 \end{center}
+\subsection{PROGRAM}
+\label{sec:org2195b47}
+\begin{tabularx}
+\item[{NOTE}] to use the functional language only, please use expressions along with \texttt{eval}. Programs are only imperative.
+\end{tabularx}
+
+\begin{center}
+\begin{tabular}{ll}
+EXAMPLE & DESCRIPTION\\
+\hline
+Prog(<declaration>, <command>) & handy syntax that puts it all together\\
+\end{tabular}
+\end{center}
 \section{String extension}
-\label{sec:org9aa35be}
+\label{sec:orgac519da}
 A few functions have been added to deal with the domain of strings.
 Functions such as these are taken from the Python langauge, which has a \textbf{very} extensive and popularstandard library.
 \begin{itemize}
@@ -175,7 +214,7 @@ Functions such as these are taken from the Python langauge, which has a \textbf{
 
 Check the examples section for some examples
 \section{Reflection extension}
-\label{sec:orgbb9d21b}
+\label{sec:orgb2c4cba}
 Reflection consists of allowing any string to be evaluated by the interpreter on the fly. In Python this is akeen to the \texttt{eval} function.
 This is also the most essential step to having a good interpreter: the interactive console for Python,
  one of the most popular interpreted languages, is often called \textbf{R.E.P.L.} (Read Eval Print Loop).
@@ -226,7 +265,7 @@ the flow of this technique:
             +---+---------------+
 \end{verbatim}
 \section{Taint-Analysis extension}
-\label{sec:orgdca2d83}
+\label{sec:orge79958c}
 Static taint analysis consists of understanding how much damage some unsafe elements (of undefined value but defined nature) will yield.
 A classic example is an unsanitized input on a HTML form, which may result in an SQL Injection attack and damage your company's most valuable assets.
 
@@ -252,10 +291,10 @@ assignments of shared key (amongst the 2 branches). If the condition is \texttt{
 \end{itemize}
 \end{description}
 \section{Examples}
-\label{sec:org348096f}
+\label{sec:org905c3a9}
 check test.ml for some code examples.
 \subsection{Numbers}
-\label{sec:orgf663630}
+\label{sec:orgf331cd6}
 \begin{center}
 \begin{tabularx}{\textwidth}{XX}
 INPUT & OUTPUT\\
@@ -268,7 +307,7 @@ Greater(Int(3),Int(5)) & EBool false\\
 \end{tabularx}
 \end{center}
 \subsection{Booleans}
-\label{sec:org5b5a15f}
+\label{sec:org7f0706c}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -280,7 +319,7 @@ Or(Equals(Float(4.5),Float(4.6)),Equals(Float(0.1),Float(0.1))) & EBool true\\
 \end{tabularx}
 \end{center}
 \subsection{Strings}
-\label{sec:orge51926f}
+\label{sec:org12bc716}
 \begin{center}
 \begin{tabularx}{\textwidth}{XX}
 INPUT & OUTPUT\\
@@ -298,7 +337,7 @@ Replace(Str("hello"),Str("goodbye"),Str("hello world!")) & EStr "goodbye world!"
 \end{tabularx}
 \end{center}
 \subsection{Functional Control Flow}
-\label{sec:orgda6f0a9}
+\label{sec:orge1ecf79}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -308,7 +347,7 @@ IfThenElse(Not(Greater(Str("bob"),Str("mouse"))),Str("ciao mondo"),Int(5)) & ESt
 \end{tabularx}
 \end{center}
 \subsection{Functional Blocks}
-\label{sec:org1cf263e}
+\label{sec:orgac3b10a}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -319,7 +358,7 @@ LetIn("a",Int(5),(LetIn("b",xxx,LetIn("c",Int(6),Plus(Var("a"),Plus(Var("b"),Var
 \end{tabularx}
 \end{center}
 \subsection{Functional Subprograms}
-\label{sec:orga9bab3d}
+\label{sec:org8e0ed7a}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -329,7 +368,7 @@ Apply(RecLambda("fact", "x", IfThenElse(Equals(Var("x"), Int(0)), Int(1), Multip
 \end{tabularx}
 \end{center}
 \subsection{Imperative State Change}
-\label{sec:orga9c1759}
+\label{sec:org9843e3c}
 \begin{center}
 \begin{tabularx}{\textwidth}{ll}
 INPUT & VARIABLE OUTPUT\\
@@ -339,7 +378,7 @@ Assign("y", Plus(Val("y"), Val("y"))) & EInt 20\\
 \end{tabularx}
 \end{center}
 \subsection{Imperative Control Flow}
-\label{sec:orgd224101}
+\label{sec:orgd2c24f3}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & VARIABLE OUTPUT\\
@@ -350,7 +389,7 @@ While(Not(Equals(Val("y"), Int(100))), CSeq(Assign("y", Plus(Val("y"), Int(1))),
 \end{tabularx}
 \end{center}
 \subsection{Imperative Blocks}
-\label{sec:orgc9b49fa}
+\label{sec:orgb373a66}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -360,7 +399,7 @@ Block(New("z", Int(1000)), Assign("y", Plus(Val "y", Val "z"))) & EInt 1010, EIn
 \end{tabularx}
 \end{center}
 \subsection{Imperative Subprograms}
-\label{sec:org3c03518}
+\label{sec:orgadb08c9}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -370,7 +409,7 @@ Val("y"), Val("z") & EInt 10, EInt 0\\
 \end{tabularx}
 \end{center}
 \subsection{Declarations}
-\label{sec:orgcfd629a}
+\label{sec:orgfec8186}
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
 INPUT & OUTPUT\\
@@ -380,7 +419,7 @@ DSeq(New("y", Int(10)), New("z", Int(0))) & EInt 10, EInt 0\\
 \end{tabularx}
 \end{center}
 \subsection{Reflection}
-\label{sec:org8d0674f}
+\label{sec:orga90ae19}
 \begin{center}
 \begin{tabularx}{\textwidth}{Xl}
 INPUT & OUTPUT\\
@@ -391,7 +430,7 @@ Reflect(Str("Assign($\backslash$"y$\backslash$", Int(5))")) & EInt 5\\
 \end{tabularx}
 \end{center}
 \subsection{Taint Analysis}
-\label{sec:org6e0371d}
+\label{sec:org7baad47}
 "dirty" is Dirty, "clean" is Clean
 \begin{center}
 \begin{tabularx}{\textwidth}{lX}
@@ -415,4 +454,9 @@ INPUT & OUTPUT\\
  & [(15n, Clean); (27n, Dirty); (41n, Dirty); (76n, Dirty)]\\
 \end{tabularx}
 \end{center}
+\section{Noted Bugs:}
+\label{sec:org12165e2}
+\begin{itemize}
+\item reflection on the \texttt{Reflect} command is supposedly allowed (since it is implemented recursively) but OCAML's escape of strings within strings is weird and needs some fixing\ldots{}
+\end{itemize}
 \end{document}

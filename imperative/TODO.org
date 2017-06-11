@@ -1,0 +1,38 @@
+- fix all the comments
+- env statico -> java static. env dinamico -> normale. scoping?
+
+
+- BLOCCO imperativo == decs*coms, le coms eseguite nello stato post-decs. il
+  blocco e' hn comando: restituisce la memoria globale finale modificata dai coms,
+  l'env globale non viene modificato xk no decs nei coms. in pratics le decs
+  iniziali sono da scartare!
+  | Block of dec*com -> 2 modi: 1, esegui tutto normale e restituisci la
+  memoria globalmente modificata. considera che lenv vecchio tanto nn puo'
+  accedervi. restituisci una lista di modifiche finali da eseguire? oppure ti
+  porti dietro 2 store.
+
+
+- funzioni =
+      | Rec ->  esiste x le funzioni ma solo in un LetIn("f",lambda,...).
+      bisogna che nel lambda ci buttiamo dentro anche "f"
+      | RecLambda(x,e) -> crea un lambda(x,e) e poi 
+
+- SCOPING (x le funzioni) != blocco (in generale) -> lo scoping e' statico se la funzione viene usata con
+  un ambiente esteso con quello che c'era al momento in cui si e' vista la
+  funzione. E' statico se viene usta con un ambiente esteso con quello che
+  c'era al momento dell'applicazione.
+  e' come dire
+  STATICO: (e' piu' facile da prevedere x il programmatore)
+  a = 5 -- viene usato questo
+  f x = a+x
+  a = 6
+  f 3
+
+  vs.
+
+  DINAMICO:
+  a = 5
+  f x = a+x
+  a = 6 -- viene usato questo
+  f 3
+

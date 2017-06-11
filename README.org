@@ -1,9 +1,9 @@
 #+TITLE: giaco.ml
 #+SUBTITLE: an interpreted EDSL written in OCAML
 #+LATEX_CLASS: article
-#+AUTHOR: Mario A. Barbara VR387794
+#+AUTHOR: Mario A. Barbara
 #+AUTHOR: @@latex:\\@@
-#+AUTHOR: Andrea Cancellieri VR387757
+#+AUTHOR: Andrea Cancellieri
 #+LANGUAGE: en
 #+OPTIONS: H:2 date:nil toc:nil
 #+LATEX_HEADER_EXTRA: \usepackage[margin=0.5in]{geometry}
@@ -52,14 +52,38 @@ Some important choices:
 * Usage
 the interpreter can be loaded up with
 #+BEGIN_SRC ocaml
-> #use "giaco.ml";;
+>> #use "giaco.ml";;
 #+END_SRC
 
 and subsequent testing may be performed:
 #+BEGIN_SRC ocaml
-> let e = Plus(Int(3), Int(4)) in eval e emptyenv emptystore
+>> (* have a functional sample: *)
+>> Plus(Int(3), Int(4)) in eval e emptyenv emptystore;;
 - : evalue = EInt 7
+
+>> (* now let's try a complete program *)
+>> let e = Lambda("x",Multiply(Val("global"), Var("x"))) in
+>> let d = New("global", Str("yes")) in
+>> let c = Assign("global", Apply(e, Int(5))) in
+>> let program = Prog(d,c) in
+>> let result_environment, result_store = interpret' program emptyenv emptystore in
+>> eval (Val("global")) result_environment result_store;;
+- : evalue = EStr "yesyesyesyesyes"
 #+END_SRC
+
+The most useful interpreter functions are:
+- ~eval: expr -> env -> store -> evalue~ :: evaluates expressions
+- ~cval: com -> env -> store -> store~ :: converts commands into a modified mutable memory
+- ~dval: dec -> env -> store -> env*store~ :: allows extending mutable memory
+- ~interpret: prog -> env -> store -> store~  :: combines all of the above. cannot return expression values like eval, though, as we do not have print
+     functionality
+- ~interpret': prog -> env -> store -> env*store~  :: just like ~interpret~ but return the last evaluated environment as well, which allows for further 
+     analysis of the output
+- ~emptyenv~ and ~emptystore~ :: already initialized empty environment and store
+- ~env'~ and ~store'~ :: allow extending environments and stores outside of syntax. ~new'~ combines this and allows doing something like the ~New(...)~ command outside of syntax.
+- ~ereflect~ and ~creflect~ and ~dreflect~ and ~reflect~ :: reflection of expressions, commands, declarations, full blown programs.
+- ~etaint~ and ~ctaint~ and ~dtaint~ and ~taint_anlaysis~ :: static taint analysis of expressions, commands, declarations and full blown programs.
+
 ** EXPRESSIONS
   #+ATTR_LATEX: :environment tabularx :width \textwidth :align lX
 | EXAMPLE                                                    | DESCRIPTION                                                                    |
@@ -110,6 +134,13 @@ and subsequent testing may be performed:
 | New("x", e)  | this allocates a new mutable variable of value e (an expression) |
 | DSeq(d1, d2) | allows concatenation of declarations                             |
 | DSkip        | does nothing                                                     |
+** PROGRAM
+  #+ATTR_LATEX: :environment tabularx :width \textwidth :align ll
+  - NOTE :: to use the functional language only, please use expressions along with ~eval~. Programs are only imperative.
+
+| EXAMPLE                        | DESCRIPTION                            |
+|--------------------------------+----------------------------------------|
+| Prog(<declaration>, <command>) | handy syntax that puts it all together |
 * String extension
 A few functions have been added to deal with the domain of strings.
 Functions such as these are taken from the Python langauge, which has a *very* extensive and popularstandard library.
@@ -297,3 +328,5 @@ check test.ml for some code examples.
 |----------------------------+------------------------------------------------------------------------------|
 | ~taint_analysis~ Prog(d,c) | [("clean", TLoc 15n); ("dirty", TLoc 27n); ("x", TLoc 76n); ("y", TLoc 41n)] |
 |                            | [(15n, Clean); (27n, Dirty); (41n, Dirty); (76n, Dirty)]                     |
+* Noted Bugs:
+- reflection on the ~Reflect~ command is supposedly allowed (since it is implemented recursively) but OCAML's escape of strings within strings is weird and needs some fixing...
